@@ -40,5 +40,10 @@ class MenuItem(Base):
     restaurant = relationship(Restaurant)
 
 
+# Instance of create engine class and point to database we use
 engine = create_engine('sqlite:///restaurantmenu.db')
+# ^^ Above example has SQLite3 with database 'restaurant'
+
+# This goes into database and creates all the classes we will soon create as
+#   new tables
 Base.metadata.create_all(engine)

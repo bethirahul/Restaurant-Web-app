@@ -1,13 +1,29 @@
 #!/usr/bin/env python3
 
+
 import os
+# HTTP Server
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import unquote, parse_qs
+# Threading to Server
 from socketserver import ThreadingMixIn
 
+# SQL Alchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    pass
+# Local file, importing tables
+from database_setup import Base, Restaurant, MenuItem
+
+
+# Create SQLite3 DB engine
+engine = create_engine('sqlite:///restaurantmenu.db')
+# Attach engine with Base (table) class
+Base.metadata.bind = engine
+# Create session and bind to DB engine
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
+
 
 memory = []
 
@@ -21,6 +37,15 @@ form = '''<!DOCTYPE html>
   <pre>
 {}
   </pre>
+</html>
+'''
+
+restaurants_content = '''<!DOCTYPE html>
+  <title>Restaurants</title>
+  <body>
+    {}
+  </body>
+</html>
 '''
 
 class MessageHandler(BaseHTTPRequestHandler):
@@ -31,7 +56,6 @@ class MessageHandler(BaseHTTPRequestHandler):
             name = unquote(self.path[1:])
             print('Unquoted Path: {}'.format(name))
             if name == '':
-
                 # send a 200 OK response
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html; charset=utf-8')
@@ -42,7 +66,20 @@ class MessageHandler(BaseHTTPRequestHandler):
                 self.wfile.write(mesg.encode())
             
             elif name == 'restaurants':
+                # send a 200 OK response
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html; charset=utf-8')
+                self.end_headers()
+
+                # SQL Query to get restaurant names
                 restaurants = session.query(Restaurant).all()
+                # Writing message
+                output_text = 'Restaurants:</br>-----------</br></br>'
+                for restaurant in restaurants:
+                    output_text += "{}</br></br>".format(restaurant.name)
+                self.wfile.write(
+                    restaurants_content.format(output_text).encode())
+                
         
         except IOError:
             self.send_response(404)
@@ -74,6 +111,11 @@ class MessageHandler(BaseHTTPRequestHandler):
         
         except:
             pass
+
+
+# Adding threading functionality to server
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
 
 
 # This starts the server
