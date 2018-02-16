@@ -48,6 +48,14 @@ restaurants_content = '''<!DOCTYPE html>
 </html>
 '''
 
+buttons = '''    <p>
+      {}
+    </p>
+    <a href="#">Edit</a>
+    <a href="#">Delete</a>
+    </br></br>
+'''
+
 class MessageHandler(BaseHTTPRequestHandler):
     """To handle messages from the client"""
     def do_GET(self):
@@ -73,10 +81,15 @@ class MessageHandler(BaseHTTPRequestHandler):
 
                 # SQL Query to get restaurant names
                 restaurants = session.query(Restaurant).all()
+                print('\nRestaurants:\n-----------')
+
                 # Writing message
-                output_text = 'Restaurants:</br>-----------</br></br>'
+                output_text = 'Restaurants:</br>--------------</br></br>'
                 for restaurant in restaurants:
-                    output_text += "{}</br></br>".format(restaurant.name)
+                    output_text += buttons.format(restaurant.name)
+                    print(restaurant.name)
+                print("")
+
                 self.wfile.write(
                     restaurants_content.format(output_text).encode())
                 
