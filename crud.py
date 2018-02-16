@@ -19,10 +19,10 @@ from sqlalchemy import create_engine
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Tools for parsing the incoming messages from clients
-from urllib.parse import parse_qs
+from urllib.parse import unquote, parse_qs
 
 # Tools for threading, used to recieve and handle multiple requests at once
-import threading
+#import threading
 from socketserver import ThreadingMixIn
 
 
@@ -51,14 +51,28 @@ form = '''<!DOCTYPE html>
 class MessageHandler(BaseHTTPRequestHandler):
     """To handle messages from the client"""
     def do_GET(self):
-        # First send a 200 OK response
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
-        self.end_headers()
 
-        # Writing message
-        mesg = form.format("\n".join(memory))
-        self.wfile.write(mesg.encode())
+        name = unquote(self.path[1:])
+        print('Unquoted Path: {}'.format(name))
+        try:
+            if name == '':
+                # send a 200 OK response
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html; charset=utf-8')
+                self.end_headers()
+
+                # Writing message
+                mesg = form.format("\n".join(memory))
+                self.wfile.write(mesg.encode())
+
+                return
+        
+        except IOError:
+            self.send_response(404)
+            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.end_headers()
+
+            self.wfile.write("404: Not found".encode())
 
     def do_POST(self):
         # Getting message length
@@ -80,11 +94,20 @@ class MessageHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
+# This starts the server
 if __name__ == '__main__':
-    server_address = ('', 8000)
-    my_server = ThreadedHTTPServer(server_address, MessageHandler)
-    print("Server is up and running! >>>>>>>>>>")
-    my_server.serve_forever()
+    try:
+        port = 8000
+        server_address = ('', port)
+        server = ThreadedHTTPServer(server_address, MessageHandler)
+        print("\nServer is up and running on port {} >>>>>>>>>>\n".format(port))
+        server.serve_forever()
+        print('abc!!!')
+
+    except KeyboardInterrupt:
+        print("\n^^ Keyboard exception received, stopping server...\n")
+        server.socket.close()
+
 
 
     
