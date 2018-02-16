@@ -34,32 +34,60 @@ Base = declarative_base()
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 
+memory = []
+
+form = '''<!DOCTYPE html>
+  <title>Message Board</title>
+  <form method="POST">
+    <textarea name="message"></textarea>
+    <br>
+    <button type="submit">Post it!</button>
+  </form>
+  <pre>
+{}
+  </pre>
+'''
 
 class MessageHandler(BaseHTTPRequestHandler):
     """To handle messages from the client"""
     def do_GET(self):
         # First send a 200 OK response
         self.send_response(200)
+        self.send_header('Content-type', 'text/html; charset=utf-8')
+        self.end_headers()
 
-        # Then send headers
+        # Writing message
+        mesg = form.format("\n".join(memory))
+        self.wfile.write(mesg.encode())
 
     def do_POST(self):
+        # Getting message length
+        length = int(self.headers.get('Content-length', 0))
 
+        # Read and parse message
+        data = self.rfile.read(length).decode()
+        message = parse_qs(data)['message'][0]
+
+        # Escape HTML tags in the message so users can't break world+dog.
+        message = message.replace("<", "&lt;")
+
+        # Store it in memory.
+        memory.append(message)
+
+        # Send a 303 back to the root page
+        self.send_response(303)  # redirect via GET
+        self.send_header('Location', '/')
+        self.end_headers()
 
 
 if __name__ == '__main__':
-    port = 8080
-    address = ('', port)
-    my_server = ThreadedHTTPServer(address, MessageHandler)
+    server_address = ('', 8000)
+    my_server = ThreadedHTTPServer(server_address, MessageHandler)
     print("Server is up and running! >>>>>>>>>>")
     my_server.serve_forever()
 
 
     
-
-
-
-
 
 
 
