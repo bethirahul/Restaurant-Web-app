@@ -291,26 +291,6 @@ class MessageHandler(BaseHTTPRequestHandler):
                     '/restaurants/{}/edit/error'.format(names[2])
                     )
                 self.end_headers()
-
-            # if len(names) == 4 and names[1] == 'restaurants' and names[3] == 'delete':
-            #     print("DELETE")
-            #     res_id = names[2]
-            #     # Get Restaurant from id
-            #     res = session.query(Restaurant).filter_by(
-            #             id = res_id).one()
-
-            #     if res:
-            #         print("\n-- Restaurant name for id {0} was {1}\n".format(
-            #             res_id, res.name))
-
-            #         # Delete Restaurant
-            #         session.delete(res)
-            #         session.commit()
-
-            #     # Send a 303 back to the add restaurant page
-            #     self.send_response(303)  # redirect via GET
-            #     self.send_header('Location', res_path)
-            #     self.end_headers()
                 
             else:
                 print(">> Other")
