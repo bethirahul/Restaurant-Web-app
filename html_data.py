@@ -53,7 +53,7 @@ res_e_cnt = '''
 edit_res_cnt = '''<!DOCTYPE html>
   <title>Edit Restaurant</title>
   <body>
-    <h4>Edit restaurant: {0}</h4>
+    <h4>Edit restaurant \'{0}\'</h4>
     <form method="POST">
       <input
         type="text"
@@ -62,6 +62,18 @@ edit_res_cnt = '''<!DOCTYPE html>
       <button type="submit">Update</button>
     </form>{1}<br>
     <a href="{2}">Go back</a>
+  </body>
+</html>
+'''
+
+del_res_cnt = '''<!DOCTYPE html>
+  <title>Edit Restaurant</title>
+  <body>
+    <h4>Are you sure you want to delete restaurant \'{0}\'?</h4>
+    <form method="POST">
+      <input type="submit" value="Delete">
+    </form><br>
+    <a href="{1}">Go back</a>
   </body>
 </html>
 '''
