@@ -71,7 +71,11 @@ class MessageHandler(BaseHTTPRequestHandler):
                 # Writing message
                 output_text = ''
                 for restaurant in restaurants:
-                    output_text += html_data.btn_cnt.format(restaurant.name)
+                    output_text += html_data.btn_cnt.format(
+                        restaurant.name,
+                        '/restaurants/{}/edit'.format(str(restaurant.id)),
+                        '/restaurants/{}/delete'.format(str(restaurant.id)),
+                        )
                     print(restaurant.name)
                 print("")
 
@@ -92,17 +96,46 @@ class MessageHandler(BaseHTTPRequestHandler):
                     html_data.add_res_cnt.format("",res_path).encode())
 
             elif name == add_res_e_path:
-                # send a 200 OK response
+                # Send a 200 OK response
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html; charset=utf-8')
                 self.end_headers()
 
                 self.wfile.write(
                     html_data.add_res_cnt.format(
-                        html_data.add_res_e_cnt,
+                        html_data.res_e_cnt,
                         res_path
                         ).encode()
                     )
+            
+            names = name.split('/')
+            if len(names) >= 4 and names[1] == 'restaurants':
+                res_id = names[2]
+
+                if names[3] == 'edit':
+                    res_query = session.query(Restaurant).filter_by(
+                        id = res_id).one()
+
+                    if res_query:
+                        print("\n$$ Restaurant name for id {0} is {1}\n".format(
+                            res_id, res_query.name))
+                        
+                        # Send a 200 OK response
+                        self.send_response(200)
+                        self.send_header(
+                            'Content-type', 'text/html; charset=utf-8')
+                        self.end_headers()
+
+                        extra_cnt = ''
+                        if len(names) == 5 and names[4] == 'error':
+                            extra_cnt = html_data.res_e_cnt
+                        self.wfile.write(
+                            html_data.edit_res_cnt.format(
+                                res_query.name,
+                                extra_cnt,
+                                res_path
+                                ).encode()
+                            )
 
             #else:
                 # Send a 303 back to the root page
@@ -166,6 +199,41 @@ class MessageHandler(BaseHTTPRequestHandler):
                 self.send_response(303)  # redirect via GET
                 self.send_header('Location', res_path)
                 self.end_headers()
+
+            names = name.split('/')
+            if len(names) >= 4 and names[1] == 'restaurants' and names[3] == 'edit':
+                res_id = names[2]
+
+                # Getting message length
+                length = int(self.headers.get('Content-length', 0))
+
+                # Read and parse message
+                data = self.rfile.read(length).decode()
+                res_name = parse_qs(data)['restaurant_name'][0]
+
+                # Escape HTML tags in the message so users can't break world
+                #   +dog.
+                res_name = res_name.replace("<", "&lt;")
+                print("\nRestaurant name entered {}".format(res_name))
+
+                # Get Restaurant from id
+                res = session.query(Restaurant).filter_by(
+                        id = res_id).one()
+
+                if res:
+                    print("\n$$ Restaurant name for id {0} was {1}\n".format(
+                        res_id, res.name))
+                
+                # Update restaurant name
+                res.name = res_name
+                session.add(res)
+                session.commit()
+                print("\n$$ Restaurant name updated to {}".format(res.name))
+
+                # Send a 303 back to the restaurants page
+                self.send_response(303)  # redirect via GET
+                self.send_header('Location', res_path)
+                self.end_headers()
         
         except:
             print("\nError in POST!\n")
@@ -175,6 +243,18 @@ class MessageHandler(BaseHTTPRequestHandler):
                 # Send a 303 back to the add restaurant page
                 self.send_response(303)  # redirect via GET
                 self.send_header('Location', add_res_e_path)
+                self.end_headers()
+
+            names = name.split('/')
+            if len(names) >= 4 and names[1] == 'restaurants' and names[3] == 'edit':
+                print(">> Restaurant name field is Empty!")
+
+                # Send a 303 back to the add restaurant page
+                self.send_response(303)  # redirect via GET
+                self.send_header(
+                    'Location',
+                    '/restaurants/{}/edit/error'.format(names[2])
+                    )
                 self.end_headers()
                 
             else:

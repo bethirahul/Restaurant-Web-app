@@ -23,10 +23,10 @@ res_cnt = '''<!DOCTYPE html>
 '''
 
 btn_cnt = '''    <p>
-      {}
+      {0}
     </p>
-    <a href="#">Edit</a>
-    <a href="#">Delete</a>
+    <a href="{1}">Edit</a>
+    <a href="{2}">Delete</a>
     <br><br>
 '''
 
@@ -37,7 +37,7 @@ add_res_cnt = '''<!DOCTYPE html>
     <form method="POST">
       <input
         type="text"
-        placeholder="Add restaurant name here"
+        placeholder="Restaurant name"
         name="restaurant_name">
       <button type="submit">Add</button>
     </form>{0}<br>
@@ -46,6 +46,22 @@ add_res_cnt = '''<!DOCTYPE html>
 </html>
 '''
 
-add_res_e_cnt = '''
+res_e_cnt = '''
     <p>Please fill in the restaurant name!</p>
+'''
+
+edit_res_cnt = '''<!DOCTYPE html>
+  <title>Edit Restaurant</title>
+  <body>
+    <h4>Edit restaurant: {0}</h4>
+    <form method="POST">
+      <input
+        type="text"
+        placeholder="New restaurant name"
+        name="restaurant_name">
+      <button type="submit">Update</button>
+    </form>{1}<br>
+    <a href="{2}">Go back</a>
+  </body>
+</html>
 '''
