@@ -16,31 +16,45 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 root_path = '/'
-all_res_path = '/restaurants/'
-add_res_path = '/restaurants/add/'
+all_res_path = root_path + 'restaurants/'
+add_res_path = all_res_path + 'add/'
+res_path = all_res_path + '{}/'
+edit_res_path = res_path + 'edit/'
+del_res_path = res_path + 'delete/'
 
 
 # These must be placed after setting database and Flask name to flask app
-@app.route('/')
-def helloWorld():
-    output_text = '<a href=/restaurants/>Show all restaurants</a>'
-    return output_text
+@app.route(root_path)
+def homePage():
+    return html_data.rt_cnt.format(all_res_path=all_res_path)
 
-@app.route('/restaurants/')
+@app.route(all_res_path)
 def showAllRestaurants():
     # Get all restaurants
-    restaurants = session.query(Restaurant)
-    for res in restaurants:
-        output_text += '<br><br><a href=/restaurants/' + str(res.id) + '/>' + res.name + '</a>'
+    all_res = session.query(Restaurant)
+    if all_res:
+        output_html = ''
+        for res in all_res:
+            output_html += html_data.res_cnt.format(
+                    res_path = res_path.format(str(res.id)),
+                    res_name = res.name,
+                    edit_res_path = edit_res_path.format(str(res.id)),
+                    del_res_path = del_res_path.format(str(res.id))
+                )
+        
+        return html_data.res_cnt.format(
+                add_res_path=add_res_path,
+                all_res_cnt=output_html
+            )
     
-    return html_data.res_cnt.format('/restaurants/add/')
+    return 'SQL Error: Unable to fetch restaurants!'
 
-@app.route('/restaurants/add/')
+@app.route(add_res_path)
 def addRestaurant():
     # Add new restaurant
     res = Restaurant
 
-@app.route('/restaurants/<int:res_id>/')
+@app.route(res_path.format('<int:res_id>'))
 def restaurantMenu(res_id):
     # Get restaurant
     res = session.query(Restaurant).filter_by(id = res_id).one()

@@ -12,22 +12,35 @@ root_cnt = '''<!DOCTYPE html>
 </html>
 '''
 
-res_cnt = '''<!DOCTYPE html>
-  <title>Restaurants</title>
+rt_cnt = '''<!DOCTYPE html>
+  <title>Restaurants - Home Page</title>
   <body>
-    <h1>Restaurants:</h1><br>
-    <a href="{0}">Add new Restaurant</a><br><br>
-    {1}
+    <h1>Restaurants Menu</h1>
+    <a href="{all_res_path}">Show Restaurants</a>
   </body>
 </html>
 '''
 
-btn_cnt = '''    <p>
-      {0}
+all_res_cnt = '''<!DOCTYPE html>
+  <title>Restaurants</title>
+  <body>
+    <h1>Restaurants:</h1>
+    <br>
+    <a href="{add_res_path}">Add new Restaurant</a>
+    <br>
+    <br>
+    {all_res_cnt}
+  </body>
+</html>
+'''
+
+res_cnt = '''    <p>
+      <a href="{res_path}">{res_name}</a>
     </p>
-    <a href="{1}">Edit</a>
-    <a href="{2}">Delete</a>
-    <br><br>
+    <a href="{edit_res_path}">Edit</a>
+    <a href="{del_res_path}">Delete</a>
+    <br>
+    <br>
 '''
 
 add_res_cnt = '''<!DOCTYPE html>
