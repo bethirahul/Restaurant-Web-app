@@ -2,6 +2,7 @@ from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
+import html_data
 
 
 # First set Flask app
@@ -14,10 +15,32 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+root_path = '/'
+all_res_path = '/restaurants/'
+add_res_path = '/restaurants/add/'
+
+
 # These must be placed after setting database and Flask name to flask app
 @app.route('/')
-@app.route('/restaurants/<int:res_id>/')
+def helloWorld():
+    output_text = '<a href=/restaurants/>Show all restaurants</a>'
+    return output_text
 
+@app.route('/restaurants/')
+def showAllRestaurants():
+    # Get all restaurants
+    restaurants = session.query(Restaurant)
+    for res in restaurants:
+        output_text += '<br><br><a href=/restaurants/' + str(res.id) + '/>' + res.name + '</a>'
+    
+    return html_data.res_cnt.format('/restaurants/add/')
+
+@app.route('/restaurants/add/')
+def addRestaurant():
+    # Add new restaurant
+    res = Restaurant
+
+@app.route('/restaurants/<int:res_id>/')
 def restaurantMenu(res_id):
     # Get restaurant
     res = session.query(Restaurant).filter_by(id = res_id).one()
@@ -32,6 +55,8 @@ def restaurantMenu(res_id):
         output_text += '<br>'
 
     return output_text
+
+
 
 
 if __name__ == '__main__':
