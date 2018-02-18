@@ -146,6 +146,7 @@ add_item_cnt = '''<!DOCTYPE html>
         placeholder="Item Description"
         name="message">
       </textarea><br>
+      <br>
       <button type="submit">Add</button>
     </form>{error}
   </body>
@@ -189,6 +190,7 @@ edit_item_cnt = '''<!DOCTYPE html>
         placeholder="Item Description"
         name="message">
       </textarea><br>
+      <br>
       <button type="submit">Update</button>
     </form>{error}
   </body>
