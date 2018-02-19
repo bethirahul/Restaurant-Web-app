@@ -20,18 +20,18 @@ root_path = '/' ##
 ## Restaurants
 all_res_path = root_path + 'restaurants/' ##
 add_res_path = all_res_path + 'add/' ##
-json_all_res_path = all_res_path + 'json/' ##
+json_all_res_path = all_res_path + 'json/' #
 ### Needs Restaurant ID
 res_path = all_res_path + '{res_id}/' ##
 edit_res_path = res_path + 'edit/' ##
 del_res_path = res_path + 'delete/' ##
 add_item_path = res_path + 'add/' ##
-add_item_e_path = add_item_path + 'error/' ##
-json_res_path = res_path + 'json/' 
+json_res_path = res_path + 'json/' #
 #### Needs Restaurant ID and Item ID
-edit_item_path = res_path + '{item_id}-edit/' #
-edit_item_e_path = edit_item_path + 'error/' #
-del_item_path = res_path + '{item_id}-delete/' #
+item_path = res_path + '{item_id}/' 
+json_item_path = item_path + 'json/' #
+edit_item_path = item_path + 'edit/' ##
+del_item_path = item_path + 'delete/' ##
 
 
 # These must be placed after setting database and Flask name to flask app
@@ -340,6 +340,30 @@ def delItmPg(res_id, item_id):
 
     # Cannot find Restaurant
     return redirect(url_for('allResPg'))
+
+#========================
+# Each Item (JSON)
+@app.route(
+    json_item_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
+    methods = ['GET'])
+def itmJSON(res_id, item_id):
+    '''Each Item in JSON format'''
+    # Get restaurant
+    res = session.query(Restaurant).filter_by(id = res_id).one()
+
+    # Found Restaurant
+    if res:
+
+        # Get item
+        item = session.query(MenuItem).filter_by(
+                id = item_id,
+                restaurant_id = res_id
+            ).one()
+
+        # Found Item
+        if item:
+
+            return jsonify(MenuItem = item.serialize)
 
 
 # Start server when this file is run
