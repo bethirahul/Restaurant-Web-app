@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, render_template
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
@@ -39,9 +39,9 @@ del_item_path = res_path + '{item_id}-delete/' #
 #========================
 # Root - Home Page
 @app.route(root_path, methods=['GET'])
-def hmPg():
+def index():
     '''Home Page'''
-    return html_data.rt_cnt.format(all_res_path = url_for('allResPg'))
+    return render_template('index.html')
 
 
 #========================
@@ -52,21 +52,9 @@ def allResPg():
     # Get all restaurants
     all_res = session.query(Restaurant)
     if all_res:
-        output_html = ''
-        for res in all_res:
-            output_html += html_data.res_link_cnt.format(
-                    res_path = url_for('resPg', res_id = res.id),
-                    res_name = res.name,
-                    edit_res_path = url_for('editResPath_name', res_id = res.id),
-                    del_res_path = url_for('delResPg', res_id = res.id),
-                    )
-        
-        return html_data.all_res_cnt.format(
-                add_res_path = url_for('addResPath_name'),
-                all_res_cnt = output_html
-                )
+        return render_template('all_res.html', all_res = all_res)
     
-    return redirect(url_for('hmPg'))
+    return redirect(url_for('index'))
 
 
 #========================
@@ -76,14 +64,12 @@ def allResPg():
 def addResPg():
     '''Add Restaurant Page'''
     if request.method == 'GET':
-        error_html = ''
+        error = False
         if request.path == add_res_e_path:
-            error_html = html_data.res_e_cnt
+            error = True
         
-        return html_data.add_res_cnt.format(
-                all_res_path = url_for('allResPg'),
-                error = error_html
-                )
+        return render_template('add_res.html', error = error)
+        
 
 
 #========================
@@ -202,18 +188,14 @@ def addItmPg(res_id):
 #========================
 # Edit Item Page
 @app.route(
-    edit_item_path.format(
-        res_id = '<int:res_id>',
-        item_id = '<int:item_id>'),
-        methods=['GET', 'POST'],
-        endpoint = 'editItemPath_name'
-        )
+    edit_item_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
+    methods=['GET', 'POST'],
+    endpoint = 'editItemPath_name'
+    )
 @app.route(
-    edit_item_e_path.format(
-        res_id = '<int:res_id>',
-        item_id = '<int:item_id>'),
-        methods=['GET', 'POST']
-        )
+    edit_item_e_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
+    methods=['GET', 'POST']
+    )
 def editItmPg(res_id, item_id):
     '''Edit Item Page'''
     # Get restaurant
@@ -247,11 +229,9 @@ def editItmPg(res_id, item_id):
 #========================
 # Delete Item Page
 @app.route(
-    del_item_path.format(
-        res_id = '<int:res_id>',
-        item_id = '<int:item_id>'),
-        methods=['GET', 'POST']
-        )
+    del_item_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
+    methods=['GET', 'POST']
+    )
 def delItmPg(res_id, item_id):
     '''Delete Item Page'''
     # Get restaurant
