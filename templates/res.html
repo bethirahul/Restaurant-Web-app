@@ -4,7 +4,7 @@
     <h3>{{res.name}}</h3>
     <a href="{{url_for('allResPg')}}">Go back</a><br>
     <br>
-    <a href="{{url_for('addItemPath_name', res_id = res.id)}}">Add Item</a><br>
+    <a href="{{url_for('addItmPg', res_id = res.id)}}">Add Item</a><br>
     <br>
     {% for item in items %}
     <p>
@@ -13,7 +13,7 @@
       {{item.description}}
     </p>
     <a href=
-        "{{url_for('editItemPath_name', res_id = res.id, item_id = item.id)}}">
+        "{{url_for('editItmPg', res_id = res.id, item_id = item.id)}}">
       Edit</a>
     <a href="{{url_for('delItmPg', res_id = res.id, item_id = item.id)}}">
       Delete</a><br>

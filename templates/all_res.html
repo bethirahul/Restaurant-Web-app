@@ -2,11 +2,11 @@
   <title>Restaurants</title>
   <body>
     <h1>Restaurants:</h1><br>
-    <a href="{{url_for('addResPath_name')}}">Add new Restaurant</a>
+    <a href="{{url_for('addResPg')}}">Add new Restaurant</a>
     {% for res in all_res %}
     <br><br>
     <a href="{{url_for('resPg', res_id = res.id)}}">{{res.name}}</a><br>
-    <a href="{{url_for('editResPath_name', res_id = res.id)}}">Edit</a>
+    <a href="{{url_for('editResPg', res_id = res.id)}}">Edit</a>
     <a href="{{url_for('delResPg', res_id = res.id)}}">Delete</a>
     {% endfor %}
   </body>

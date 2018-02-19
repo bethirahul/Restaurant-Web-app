@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, flash
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
@@ -20,11 +20,9 @@ root_path = '/' ##
 ## Restaurants
 all_res_path = root_path + 'restaurants/' ##
 add_res_path = all_res_path + 'add/' ##
-add_res_e_path = add_res_path + 'error/' ##
 ### Needs Restaurant ID
 res_path = all_res_path + '{res_id}/' ##
 edit_res_path = res_path + 'edit/' ##
-edit_res_e_path = edit_res_path + 'error/' ##
 del_res_path = res_path + 'delete/' ##
 add_item_path = res_path + 'add/' ##
 add_item_e_path = add_item_path + 'error/' ##
@@ -62,30 +60,18 @@ def allResPg():
 
 #========================
 # Add Restaurant Page
-@app.route(
-    add_res_path,
-    methods = ['GET', 'POST'],
-    endpoint = 'addResPath_name'
-)
-@app.route(
-    add_res_e_path,
-    methods = ['GET', 'POST'],
-    endpoint = 'addResErrorPath_name'
-)
+@app.route(add_res_path, methods = ['GET', 'POST'])
 def addResPg():
     '''Add Restaurant Page'''
     # GET
     if request.method == 'GET':
-        error = False
-        if request.path == add_res_e_path:
-            error = True
-        
-        return render_template('add_res.html', error = error)
+        return render_template('add_res.html')
     
     # POST
     # Input empty
     if request.form['res_name'] == '':
-        return redirect(url_for('addResErrorPath_name'))
+        flash('Error: Please fill in the Restaurant name!')
+        return redirect(url_for('addResPg'))
 
     # Input not empty
     new_res = Restaurant(name = request.form['res_name'])
@@ -118,13 +104,7 @@ def resPg(res_id):
 # Edit Restaurant Page
 @app.route(
     edit_res_path.format(res_id = '<int:res_id>'),
-    methods = ['GET', 'POST'],
-    endpoint = 'editResPath_name'
-)
-@app.route(
-    edit_res_e_path.format(res_id = '<int:res_id>'),
-    methods = ['GET', 'POST'],
-    endpoint = 'editResErrorPath_name'
+    methods = ['GET', 'POST']
 )
 def editResPg(res_id):
     '''Edit Restaurant Page'''
@@ -136,20 +116,16 @@ def editResPg(res_id):
 
         # GET
         if request.method == 'GET':
-            error = False
-            if request.path == edit_res_e_path.format(res_id = res_id):
-                error = True
-            
             return render_template(
                     'edit_res.html',
-                    res_name = res.name,
-                    error = error
+                    res_name = res.name
                 )
         
         # POST
         # Input empty
         if request.form['res_name'] == '':
-            return redirect(url_for('editResErrorPath_name', res_id = res_id))
+            flash('Error: Restaurant name cannot be empty!')
+            return redirect(url_for('editResPg', res_id = res_id))
 
         # Input not empty
         if request.form['res_name'] != res.name:
@@ -190,13 +166,7 @@ def delResPg(res_id):
 # Add Item Page
 @app.route(
     add_item_path.format(res_id = '<int:res_id>'),
-    methods = ['GET', 'POST'],
-    endpoint = 'addItemPath_name'
-)
-@app.route(
-    add_item_e_path.format(res_id = '<int:res_id>'),
-    methods = ['GET', 'POST'],
-    endpoint = 'addItemErrorPath_name'
+    methods = ['GET', 'POST']
 )
 def addItmPg(res_id):
     '''Add Item Page'''
@@ -208,16 +178,13 @@ def addItmPg(res_id):
         
         # GET
         if request.method == 'GET':
-            error = False
-            if request.path == add_item_e_path.format(res_id = res_id):
-                error = True
-            
-            return render_template('add_item.html', res = res, error = error)
+            return render_template('add_item.html', res = res)
         
         # POST
         # Input name empty
         if request.form['item_name'] == '':
-            return redirect(url_for('addItemErrorPath_name', res_id = res_id))
+            flash('Error: Please fill in the Item name!')
+            return redirect(url_for('addItmPg', res_id = res_id))
 
         # Input name not empty
         new_item = MenuItem(
@@ -239,13 +206,7 @@ def addItmPg(res_id):
 # Edit Item Page
 @app.route(
     edit_item_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
-    methods = ['GET', 'POST'],
-    endpoint = 'editItemPath_name'
-)
-@app.route(
-    edit_item_e_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
-    methods = ['GET', 'POST'],
-    endpoint = 'editItemErrorPath_name'
+    methods = ['GET', 'POST']
 )
 def editItmPg(res_id, item_id):
     '''Edit Item Page'''
@@ -266,26 +227,19 @@ def editItmPg(res_id, item_id):
 
             # GET
             if request.method == 'GET':
-                error = False
-                if request.path == edit_item_e_path.format(
-                        res_id = res_id,
-                        item_id = item_id
-                    ):
-                    error = True
-                
                 return render_template(
                         'edit_item.html',
                         item = item,
-                        res = res,
-                        error = error
+                        res = res
                     )
             
             # POST
             # Input name empty
             if request.form['item_name'] == '':
+                flash('Error: Item name cannot be empty!')
                 return redirect(
                         url_for(
-                            'editItemErrorPath_name',
+                            'editItmPg',
                             res_id = res_id,
                             item_id = item_id
                         )
@@ -356,6 +310,8 @@ def delItmPg(res_id, item_id):
     return redirect(url_for('allResPg'))
 
 
+# Start server when this file is run
 if __name__ == '__main__':
+    app.secret_key = 'very_secure_password'
     app.debug = True
     app.run(host ='0.0.0.0', port = 8000)
