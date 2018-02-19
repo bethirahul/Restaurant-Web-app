@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+  <title>Add Item</title>
+  <body>
+    <h3>Add a new Item in Restaurant '{{res.name}}'</h3>
+    <a href="{{url_for('resPg', res_id = res.id)}}">Go back</a><br>
+    <br>
+    <form method="POST">
+      Name:
+      <input
+        type="text"
+        placeholder="Item name"
+        name="item_name"><br>
+      <br>
+      Price: $
+      <input
+        type="text"
+        placeholder="Item price"
+        name="item_price"><br>
+      <br>
+      Description:<br>
+      <textarea
+        placeholder="Item Description"
+        name="message">
+      </textarea><br>
+      <br>
+      <button type="submit">Add</button>
+    </form>
+    {% if error == True %}
+    <p>Error: One of the fields is empty! Please fill it.</p>
+    {% endif %}
+  </body>
+</html>

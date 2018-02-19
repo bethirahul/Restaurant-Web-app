@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-  <title>Add Restaurant</title>
+  <title>Edit Restaurant</title>
   <body>
-    <h3>Add a new Restaurant</h3>
+    <h4>Edit restaurant '{{res_name}}'</h4>
     <a href="{{url_for('allResPg')}}">Go back</a><br>
     <br>
     <form method="POST">
       <input
         type="text"
-        placeholder="Restaurant name"
+        placeholder="New restaurant name"
         name="restaurant_name">
-      <button type="submit">Add</button>
+      <button type="submit">Update</button>
     </form>
     {% if error == True %}
     <p>Please fill in the restaurant name!</p>

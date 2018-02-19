@@ -12,7 +12,7 @@ app = Flask(__name__)
 engine = create_engine('sqlite:///restaurantmenu.db')
 Base.metadata.bind = engine
 
-DBSession = sessionmaker(bind=engine)
+DBSession = sessionmaker(bind = engine)
 session = DBSession()
 
 # Home Page
@@ -38,7 +38,7 @@ del_item_path = res_path + '{item_id}-delete/' #
 
 #========================
 # Root - Home Page
-@app.route(root_path, methods=['GET'])
+@app.route(root_path, methods = ['GET'])
 def index():
     '''Home Page'''
     return render_template('index.html')
@@ -46,7 +46,7 @@ def index():
 
 #========================
 # All Restaurants Page
-@app.route(all_res_path, methods=['GET'])
+@app.route(all_res_path, methods = ['GET'])
 def allResPg():
     '''All Restaurants Page'''
     # Get all restaurants
@@ -59,8 +59,12 @@ def allResPg():
 
 #========================
 # Add Restaurant Page
-@app.route(add_res_path, methods=['GET', 'POST'], endpoint = 'addResPath_name')
-@app.route(add_res_e_path, methods=['GET', 'POST'])
+@app.route(
+    add_res_path,
+    methods = ['GET', 'POST'],
+    endpoint = 'addResPath_name'
+)
+@app.route(add_res_e_path, methods = ['GET', 'POST'])
 def addResPg():
     '''Add Restaurant Page'''
     if request.method == 'GET':
@@ -71,42 +75,19 @@ def addResPg():
         return render_template('add_res.html', error = error)
         
 
-
 #========================
 # Each Restaurant Page
-@app.route(res_path.format(res_id = '<int:res_id>'), methods=['GET'])
+@app.route(res_path.format(res_id = '<int:res_id>'), methods = ['GET'])
 def resPg(res_id):
     '''Restaurant page with items in it'''
     # Get restaurant
     res = session.query(Restaurant).filter_by(id = res_id).one()
 
     if res:
-        output_html = ''
         # Get the restaurant's menu items
-        items = session.query(MenuItem).filter_by(restaurant_id=res.id)
-        for item in items:
-            output_html += html_data.res_item_cnt.format(
-                    item_name = item.name,
-                    item_price = item.price,
-                    item_desc = item.description,
-                    edit_item_path = url_for(
-                            'editItemPath_name',
-                            res_id = res_id,
-                            item_id = item.id
-                            ),
-                    del_item_path = url_for(
-                            'delItmPg',
-                            res_id = res_id,
-                            item_id = item.id
-                            )
-                    )
-
-        return html_data.res_cnt.format(
-                res_name = res.name,
-                all_res_path = url_for('allResPg'),
-                add_item_path = url_for('addItemPath_name', res_id = res.id),
-                res_items = output_html
-                )
+        items = session.query(MenuItem).filter_by(restaurant_id = res.id)
+        
+        return render_template('res.html', res = res, items = items)
     
     return redirect(url_for('allResPg'))
 
@@ -115,26 +96,26 @@ def resPg(res_id):
 # Edit Restaurant Page
 @app.route(
     edit_res_path.format(res_id = '<int:res_id>'),
-    methods=['GET', 'POST'],
+    methods = ['GET', 'POST'],
     endpoint = 'editResPath_name'
-    )
+)
 @app.route(
-    edit_res_e_path.format(res_id = '<int:res_id>'), methods=['GET', 'POST'])
+    edit_res_e_path.format(res_id = '<int:res_id>'), methods = ['GET', 'POST'])
 def editResPg(res_id):
     '''Edit Restaurant Page'''
     # Get restaurant
     res = session.query(Restaurant).filter_by(id = res_id).one()
 
     if request.method == 'GET' and res:
-        error_html = ''
+        error = False
         if request.path == edit_res_e_path.format(res_id = res_id):
-            error_html = html_data.res_e_cnt
+            error = True
         
-        return html_data.edit_res_cnt.format(
+        return render_template(
+                'edit_res.html',
                 res_name = res.name,
-                all_res_path = url_for('allResPg'),
-                error = error_html
-                )
+                error = error
+            )
     
     return redirect(url_for('allResPg'))
 
@@ -142,17 +123,14 @@ def editResPg(res_id):
 #========================
 # Delete Restaurant Page
 @app.route(
-    del_res_path.format(res_id = '<int:res_id>'), methods=['GET', 'POST'])
+    del_res_path.format(res_id = '<int:res_id>'), methods = ['GET', 'POST'])
 def delResPg(res_id):
     '''Delete Restaurant Page'''
     # Get restaurant
     res = session.query(Restaurant).filter_by(id = res_id).one()
 
     if request.method == 'GET' and res:
-        return html_data.del_res_cnt.format(
-                res_name = res.name,
-                all_res_path = url_for('allResPg')
-                )
+        return render_template('del_res.html', res_name = res.name)
 
     return redirect(url_for('allResPg'))
 
@@ -161,26 +139,22 @@ def delResPg(res_id):
 # Add Item Page
 @app.route(
     add_item_path.format(res_id = '<int:res_id>'),
-    methods=['GET', 'POST'],
+    methods = ['GET', 'POST'],
     endpoint = 'addItemPath_name'
-    )
+)
 @app.route(
-    add_item_e_path.format(res_id = '<int:res_id>'), methods=['GET', 'POST'])
+    add_item_e_path.format(res_id = '<int:res_id>'), methods = ['GET', 'POST'])
 def addItmPg(res_id):
     '''Add Item Page'''
     # Get restaurant
     res = session.query(Restaurant).filter_by(id = res_id).one()
 
     if request.method == 'GET' and res:
-        error_html = ''
+        error = False
         if request.path == add_item_e_path.format(res_id = res_id):
-            error_html = html_data.item_e_cnt
+            error = True
         
-        return html_data.add_item_cnt.format(
-                res_name = res.name,
-                res_path = url_for('resPg', res_id = res_id),
-                error = error_html
-                )
+        return render_template('add_item.html', res = res, error = error)
 
     return redirect(url_for('allResPg'))
 
@@ -189,13 +163,13 @@ def addItmPg(res_id):
 # Edit Item Page
 @app.route(
     edit_item_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
-    methods=['GET', 'POST'],
+    methods = ['GET', 'POST'],
     endpoint = 'editItemPath_name'
-    )
+)
 @app.route(
     edit_item_e_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
-    methods=['GET', 'POST']
-    )
+    methods = ['GET', 'POST']
+)
 def editItmPg(res_id, item_id):
     '''Edit Item Page'''
     # Get restaurant
@@ -204,24 +178,22 @@ def editItmPg(res_id, item_id):
         item = session.query(MenuItem).filter_by(
                 id = item_id,
                 restaurant_id = res_id
-                ).one()
+            ).one()
 
         if request.method == 'GET' and item:
-            error_html = ''
+            error = False
             if request.path == edit_item_e_path.format(
                     res_id = res_id,
                     item_id = item_id
                 ):
-                error_html = html_data.item_e_cnt
+                error = True
             
-            return html_data.edit_item_cnt.format(
-                    item_name = item.name,
-                    res_name = res.name,
-                    res_path = url_for('resPg', res_id = res_id),
-                    item_price = item.price,
-                    item_desc = item.description,
-                    error = error_html
-                    )
+            return render_template(
+                    'edit_item.html',
+                    item = item,
+                    res = res,
+                    error = error
+                )
 
     return redirect(url_for('allResPg'))
 
@@ -230,7 +202,7 @@ def editItmPg(res_id, item_id):
 # Delete Item Page
 @app.route(
     del_item_path.format(res_id = '<int:res_id>', item_id = '<int:item_id>'),
-    methods=['GET', 'POST']
+    methods = ['GET', 'POST']
     )
 def delItmPg(res_id, item_id):
     '''Delete Item Page'''
@@ -240,13 +212,13 @@ def delItmPg(res_id, item_id):
         item = session.query(MenuItem).filter_by(
                 id = item_id,
                 restaurant_id = res_id
-                ).one()
+            ).one()
 
         if request.method == 'GET' and item:
-            return html_data.del_item_cnt.format(
+            return render_template(
+                    'del_item.html',
                     item_name = item.name,
-                    res_name = res.name,
-                    res_path = url_for('resPg', res_id = res_id)
+                    res = res,
                 )
 
     return redirect(url_for('allResPg'))
