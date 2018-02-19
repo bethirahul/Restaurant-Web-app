@@ -7,8 +7,9 @@
     <form method="POST">
       <input
         type="text"
-        placeholder="New restaurant name"
-        name="restaurant_name">
+        placeholder="Restaurant name"
+        name="res_name"
+        value="{{res_name}}">
       <button type="submit">Update</button>
     </form>
     {% if error == True %}

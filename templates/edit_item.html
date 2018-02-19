@@ -16,24 +16,26 @@
       <input
         type="text"
         placeholder="Item name"
-        name="item_name"><br>
+        name="item_name"
+        value="{{item.name}}"><br>
       <br>
       Price: $
       <input
         type="text"
         placeholder="Item price"
-        name="item_price"><br>
+        name="item_price"
+        value="{{item.price}}"><br>
       <br>
       Description:<br>
       <textarea
         placeholder="Item Description"
-        name="message">
-      </textarea><br>
+        name="item_desc"
+        value="{{item.description}}"></textarea><br>
       <br>
       <button type="submit">Update</button>
     </form>
     {% if error == True %}
-    <p>Error: One of the fields is empty! Please fill it.</p>
+    <p>Please fill in the item name!</p>
     {% endif %}
   </body>
 </html>

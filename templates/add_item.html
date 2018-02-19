@@ -20,13 +20,12 @@
       Description:<br>
       <textarea
         placeholder="Item Description"
-        name="message">
-      </textarea><br>
+        name="item_desc"></textarea><br>
       <br>
       <button type="submit">Add</button>
     </form>
     {% if error == True %}
-    <p>Error: One of the fields is empty! Please fill it.</p>
+    <p>Please fill in the item name!</p>
     {% endif %}
   </body>
 </html>
