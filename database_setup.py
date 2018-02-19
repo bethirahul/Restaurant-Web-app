@@ -20,12 +20,21 @@ Base = declarative_base()
 # ^^ Will let the SQLAlchemy know that out classes are special SQLAlchemy
 #   classes that correspond to the tables in our database
 
-
+# Classes (Tables)
 class Restaurant(Base):
     __tablename__ = 'restaurant'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
+
+    # Code to define what to send (in each restaurant) in JSON format
+    @property
+    def serialize(self):
+        # Returns data in easily serializable format (like dictionary format)
+        return {
+            'name' : self.name,
+            'id' : self.id,
+        }
 
 
 class MenuItem(Base):
@@ -38,6 +47,18 @@ class MenuItem(Base):
     course = Column(String(250))
     restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
     restaurant = relationship(Restaurant)
+
+    # Code to define what to send (in each item) in JSON format
+    @property
+    def serialize(self):
+        # Returns data in easily serializable format (like dictionary format)
+        return {
+            'id' : self.id,
+            'name' : self.name,
+            'price' : self.price,
+            'description' : self.description,
+            'course' : self.course
+        }
 
 
 # Instance of create engine class and point to database we use

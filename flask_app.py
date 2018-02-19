@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, render_template, flash
+from flask import Flask, request, redirect, url_for, render_template, flash, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
@@ -20,12 +20,14 @@ root_path = '/' ##
 ## Restaurants
 all_res_path = root_path + 'restaurants/' ##
 add_res_path = all_res_path + 'add/' ##
+json_all_res_path = all_res_path + 'json/' ##
 ### Needs Restaurant ID
 res_path = all_res_path + '{res_id}/' ##
 edit_res_path = res_path + 'edit/' ##
 del_res_path = res_path + 'delete/' ##
 add_item_path = res_path + 'add/' ##
 add_item_e_path = add_item_path + 'error/' ##
+json_res_path = res_path + 'json/' 
 #### Needs Restaurant ID and Item ID
 edit_item_path = res_path + '{item_id}-edit/' #
 edit_item_e_path = edit_item_path + 'error/' #
@@ -57,6 +59,18 @@ def allResPg():
     # Cannot find Restaurants table
     return redirect(url_for('index'))
 
+
+#========================
+# All Restaurants (JSON)
+@app.route(json_all_res_path, methods = ['GET'])
+def allResJSON():
+    '''All Restaurants in JSON'''
+    # Get all restaurants
+    all_res = session.query(Restaurant)
+
+    # Found Restaurants table
+    if all_res:
+        return jsonify(Restaurants = [res.serialize for res in all_res])
 
 #========================
 # Add Restaurant Page
@@ -98,6 +112,24 @@ def resPg(res_id):
     
     # Cannot find Restaurant
     return redirect(url_for('allResPg'))
+
+
+#========================
+# Each Restaurant (JSON)
+@app.route(json_res_path.format(res_id = '<int:res_id>'), methods = ['GET'])
+def resJSON(res_id):
+    '''Each Restaurant Page'''
+
+    # Get Restaurant
+    res = session.query(Restaurant).filter_by(id = res_id).one()
+
+    # Found restaurant
+    if res:
+        # Get Items
+        items = session.query(MenuItem).filter_by(restaurant_id = res_id).all()
+
+        # Return in JSON format
+        return jsonify(MenuItems = [item.serialize for item in items])
 
 
 #========================

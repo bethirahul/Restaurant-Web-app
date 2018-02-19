@@ -4,7 +4,8 @@ body {
 }
 
 h1,
-h3 {
+h3,
+h4 {
     color: #ffffff;
     font-family: 'georgia', serif;
     margin: 0;
