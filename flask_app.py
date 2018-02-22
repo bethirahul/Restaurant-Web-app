@@ -94,6 +94,7 @@ def index():
 @app.route(login_path, methods=['GET'])
 def loginPg():
     '''Login Page for Google Sign-in'''
+    print(request.referrer)
     state_token = ''
     for i in range(0, 32):
         state_token += random.choice(string.ascii_letters + string.digits)
