@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+  <head>
+    <!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
+    </script>
+    <script src="//apis.google.com/js/platform.js?onload=start"> </script>
+    <!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+  </head>
+  <title>Login</title>
+  <body>
+    <!-- GOOGLE SIGN IN BUTTON -->  
+    <div id="signinButton">
+      <!-- scope: openID format, getting email from that format-->
+      <!-- cliendid: the one which we created from https://console.developers.google.com/apis-->
+      <!-- redirecturi: methods = ['POST'] -->
+      <!-- accesstype: server can access Google APIit even if the user is not logged in (offline) -->
+      <!-- cookiepolicy: if our website has single host name -->
+      <!-- callback: which javaScript function should be called after pressing sign in -->
+      <!-- approvalprompt: Forces to login each time the login page is loaded (only good for debugging)-->
+      <span
+        class="g-signin"
+        data-scope="openid email"
+        data-clientid="1015406173800-a06ftre0guaj7blbcdm684mpe9h8qe73.apps.googleusercontent.com"
+        data-redirecturi="postmessage"
+        data-accesstype="offline"
+        data-cookiepolicy="single_host_origin"
+        data-callback="signInCallback"
+        data-approvalprompt="force">
+      </span>
+    </div>
+    <div id="result"></div>
+    <script>
+        function signInCallback(authResult) // data obtained from google server
+        {
+            // check if the one-time-use code is present in the data obtained
+            if (authResult['code'])
+            {
+                // Hide the sign-in button now that the user is authorized
+                $('#signinButton').attr('style', 'display: none');
+                // Send the one-time-use code to the server, if the server
+                // responds, write a 'login successful' message to the web page
+                // and then redirect back to the main restaurants page
+                $.ajax( // JSON code
+                    {
+                        type: 'POST',
+                        url: '/gconnect?state={{STATE}}', // our server variable
+                        // ^^It is used to very the
+                        // cross-site reference forgery attack
+                        // False - Ask JQuery not to process the response
+                        // into a string
+                        processData: false,
+                        // Data being sent to the server >> one-time-use code
+                        data: authResult['code'],
+                        // This indicates we are sending arbitraty binary
+                        // stream of data
+                        contentType: 'application/octet-stream; charset=utf-8',
+                        // After getting 200 OK response
+                        // return a succesful login response to the user
+                        success: function(result)
+                            {
+                                // Check if result is obtained
+                                if (result)
+                                {
+                                    // display obtained message in HTML page
+                                    // with a succesful login message
+                                    $('#result').html(
+                                        'Login Successful!<br>'+
+                                        result +
+                                        '<br>Redirecting...'
+                                    )
+                                    setTimeout(
+                                        // run this function after 4 secs
+                                        function()
+                                        {
+                                            // redirects to the path
+                                            window.location.href =
+                                                "{{all_res_path}}";
+                                        },
+                                        // ^^single line function
+                                        4000
+                                        // time to wait and redirect - 4 sec
+                                    );
+                                }
+                                // If result is not obtained and received error,
+                                // Show error in console.log
+                                else if (authResult['error'])
+                                {
+                                    console.log(
+                                        'There was an error: ' +
+                                        authResult['error']
+                                    );
+                                }
+                                // If nothing is received, show error to user
+                                else
+                                {
+                                    $('#result').html(
+                                        'Failed to make a server-side call. Check your configuration and console.'
+                                    );
+                                }
+                            }
+                    }
+                );
+            }
+        }
+    </script>
+    <!-- END GOOGLE SIGN IN BUTTON -->
+  </body>
+</html>

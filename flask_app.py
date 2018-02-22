@@ -1,8 +1,42 @@
-from flask import Flask, request, redirect, url_for, render_template, flash, jsonify
+# To use Flask framework
+from flask import Flask, request, redirect
+# To use decorators as links to pages
+from flask import url_for
+# To use HTML templates
+from flask import render_template
+# To send flash messages
+from flask import flash
+# To send JSON format messages
+from flask import jsonify
+# To use 3rd-party OAuth 2 providers
+from flask import session
+
+# To generate random string to stop hacking session
+import random, string
+
+# To use SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# To use the tables classes we setup in our database
 from database_setup import Base, Restaurant, MenuItem
-import html_data
+
+# To use OAuth 2
+# This creates a flow object from client secretes JSON file
+#   client ID, client secret, etc. OAuth 2 parameters
+from oauth2client.client import flow_from_clientsecrets
+# To catch error when trying to exchange authorization code for an access token
+from oauth2client.client import FlowExchangeError
+# Python's comprehensive HTTP client Library
+import httplib2
+# API to convert Python objects to JSON format
+import json
+# Flask module to convert a function's returned value into a real response obj
+# to send to the client
+from flask import make_response
+# Apache 2.0 licensed HTTP library (different from flask >> request)
+# similar to urllib2 but with improvements
+import requests
 
 
 # First set Flask app
@@ -13,25 +47,34 @@ engine = create_engine('sqlite:///restaurantmenu.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind = engine)
-session = DBSession()
+db_session = DBSession()
 
 # Home Page
 root_path = '/' ##
+login_path = '/login' ##
+login_success_path = '/gconnect' #
 ## Restaurants
 all_res_path = root_path + 'restaurants/' ##
 add_res_path = all_res_path + 'add/' ##
-json_all_res_path = all_res_path + 'json/' #
+json_all_res_path = all_res_path + 'json/' ##
 ### Needs Restaurant ID
 res_path = all_res_path + '{res_id}/' ##
 edit_res_path = res_path + 'edit/' ##
 del_res_path = res_path + 'delete/' ##
 add_item_path = res_path + 'add/' ##
-json_res_path = res_path + 'json/' #
+json_res_path = res_path + 'json/' ##
 #### Needs Restaurant ID and Item ID
 item_path = res_path + '{item_id}/' 
-json_item_path = item_path + 'json/' #
+json_item_path = item_path + 'json/' ##
 edit_item_path = item_path + 'edit/' ##
 del_item_path = item_path + 'delete/' ##
+
+# Get (JSON Decoding) client ID from the json file which is downloaded from
+# the Google OAuth2 developer website for this app
+CLIENT_ID = json.loads(
+        open('client_secrets.json', 'r').read()
+    )['web']['client_id']
+APPLICATION_NAME = "Restaurant Menu Application"
 
 
 # These must be placed after setting database and Flask name to flask app
@@ -45,12 +88,165 @@ def index():
 
 
 #========================
+# Login Page
+@app.route(login_path, methods = ['GET'])
+def loginPg():
+    '''Login Page for Google Sign-in'''
+    state_token = ''
+    for i in range(0, 32):
+        state_token += random.choice(string.ascii_letters + string.digits)
+    # ^^Can also be written as
+    # state_token = ''.join(
+    #       random.choice(
+    #           string.ascii_letters + string.digits
+    #       ) for x in xrange(32)
+    #   )
+    # Send the state_token to session by assigning it to
+    # session's state argument
+    session['state'] = state_token
+    return render_template(
+            'login.html',
+            STATE = state_token,
+            all_res_path = all_res_path
+        )
+
+# Login Success Response - POST
+@app.route(login_success_path, methods = ['POST'])
+def gconnect():
+    '''Google Sign-in response handler'''
+    # If session's argument state (state_token) doesn't match with the
+    # response's state argument, return error 401.
+    # Round-trip verification
+    if request.args.get('state') != session['state']:
+        # Make and send error response 401 with a message by encoding with JSON
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 401
+    
+    # If the state_tokens matched
+    # Collect one-time-use code from the Google server
+    code = request.data
+
+    # Trying to use one-time-use code to exchange it with credentials object
+    # which contains the access token for the server
+    try:
+        # Create new OAuth Flow object with Client's Secrete key info
+        # from 'clients_screte.json' file
+        oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+        # Message type -> POST
+        oauth_flow.redirect_uri = 'postmessage'
+        # Get credentials object by initiating setp2 exchange with the
+        # one-time-use code as input
+        credentials = oauth_flow.step2_exchange(code)
+    
+    # If error occurs in ^^above (step2 exchange)
+    except FlowExchangeError:
+        # Make and send error response 401 with a message by encoding with JSON
+        response = make_response(
+            json.dumps('Failed to upgrade the authorization code.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 401
+
+    # If credentials is obtained without Flow error,
+    # check if the access token is valid
+
+    # Get Access token from the obtained Credentials object
+    access_token = credentials.access_token
+
+    # Google API URL to validate the Access Token
+    url = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={}'.format(access_token)
+    # Perform JSON decode on HTTP GET request response of the url
+    # to get the validation result
+    result = json.loads(httplib2.Http().request(url, 'GET')[1].decode())
+
+    # Check for errors in result
+    if result.get('error') != None:
+        # Make and send error response 500 Internal Server Error with the error message from result by encoding with JSON
+        response = make_response(json.dumps(result.get('error')), 500)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 500
+
+    # If no errors, then Access token is available without errors,
+    # but check for the right Access token
+
+    # Get Google ID from credentials
+    gplus_id = credentials.id_token['sub']
+
+    # If Access Token's User ID is not the same as Google ID from credentials
+    if result['user_id'] != gplus_id:
+        # Make and send error response 401 with a message by encoding with JSON
+        response = make_response(
+            json.dumps("Token's user ID doesn't match given user ID."), 401)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 401
+    
+    # Check if Access Token is issued for this app by checking with CLIENT ID
+    if result['issued_to'] != CLIENT_ID:
+        # Make and send error response 401 with a message by encoding with JSON
+        response = make_response(
+            json.dumps("Token's client ID does not match app's."), 401)
+        print("Token's client ID does not match app's.")
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 401
+    
+    # Check if User is already Logged-in
+    stored_access_token = session.get('access_token')
+    stored_gplus_id = session.get('gplus_id')
+    if stored_access_token != None and gplus_id == stored_gplus_id:
+        # Make and send a 200 OK response with a message by encoding with JSON
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 200
+
+    # If the User is not Logged-in before, store the credentials and Google ID
+    # to check for Logged-in next time - to avoid Logging-in again
+    session['access_token'] = credentials.access_token
+    session['gplus_id'] = gplus_id
+
+    # Get Google User Info
+    userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
+    userinfo_parameters = {
+            'access_token': credentials.access_token,
+            'alt': 'json'
+        }
+    # Send and get response from that URL
+    userinfo_response = requests.get(userinfo_url, params = userinfo_parameters)
+    userinfo = userinfo_response.json()
+
+    session['username'] = userinfo['name']
+    session['picture'] = userinfo['picture'] # picture URL
+    session['email'] = userinfo['email']
+
+    flash("you are now logged in as {}".format(session['username']))
+
+    print("done!")
+
+    output = '''<h1>Welcome, {name}!</h1>
+    <img
+      src="{pic_url}"
+      style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">
+    '''
+
+    return output.format(
+            name = session['username'],
+            pic_url = session['picture']
+        )
+
+
+#========================
 # All Restaurants Page
 @app.route(all_res_path, methods = ['GET'])
 def allResPg():
     '''All Restaurants Page'''
     # Get all restaurants
-    all_res = session.query(Restaurant)
+    all_res = db_session.query(Restaurant)
 
     # Found Restaurants table
     if all_res:
@@ -66,7 +262,7 @@ def allResPg():
 def allResJSON():
     '''All Restaurants in JSON'''
     # Get all restaurants
-    all_res = session.query(Restaurant)
+    all_res = db_session.query(Restaurant)
 
     # Found Restaurants table
     if all_res:
@@ -89,8 +285,8 @@ def addResPg():
 
     # Input not empty
     new_res = Restaurant(name = request.form['res_name'])
-    session.add(new_res)
-    session.commit()
+    db_session.add(new_res)
+    db_session.commit()
 
     return redirect(url_for('allResPg'))
         
@@ -101,12 +297,12 @@ def addResPg():
 def resPg(res_id):
     '''Restaurant page with items in it'''
     # Get restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found restaurant
     if res:
         # Get the restaurant's menu items
-        items = session.query(MenuItem).filter_by(restaurant_id = res.id)
+        items = db_session.query(MenuItem).filter_by(restaurant_id = res.id)
         
         return render_template('res.html', res = res, items = items)
     
@@ -121,12 +317,12 @@ def resJSON(res_id):
     '''Each Restaurant Page'''
 
     # Get Restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found restaurant
     if res:
         # Get Items
-        items = session.query(MenuItem).filter_by(restaurant_id = res_id).all()
+        items = db_session.query(MenuItem).filter_by(restaurant_id = res_id).all()
 
         # Return in JSON format
         return jsonify(MenuItems = [item.serialize for item in items])
@@ -141,7 +337,7 @@ def resJSON(res_id):
 def editResPg(res_id):
     '''Edit Restaurant Page'''
     # Get restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found restaurant
     if res:
@@ -162,7 +358,7 @@ def editResPg(res_id):
         # Input not empty
         if request.form['res_name'] != res.name:
             res.name = request.form['res_name']
-            session.commit()
+            db_session.commit()
 
     # After adding Restaurant OR
     # Cannot find Restaurant
@@ -176,7 +372,7 @@ def editResPg(res_id):
 def delResPg(res_id):
     '''Delete Restaurant Page'''
     # Get restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found Restaurant
     if res:
@@ -186,8 +382,8 @@ def delResPg(res_id):
             return render_template('del_res.html', res_name = res.name)
         
         # POST
-        session.delete(res)
-        session.commit()
+        db_session.delete(res)
+        db_session.commit()
 
     # After deleting Restaurant OR
     # Cannot find Restaurant
@@ -203,7 +399,7 @@ def delResPg(res_id):
 def addItmPg(res_id):
     '''Add Item Page'''
     # Get restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found Restaurant
     if res:
@@ -225,8 +421,8 @@ def addItmPg(res_id):
                 description = request.form['item_desc'],
                 restaurant_id = res_id
             )
-        session.add(new_item)
-        session.commit()
+        db_session.add(new_item)
+        db_session.commit()
 
         return redirect(url_for('resPg', res_id = res_id))
 
@@ -243,13 +439,13 @@ def addItmPg(res_id):
 def editItmPg(res_id, item_id):
     '''Edit Item Page'''
     # Get restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found Restaurant
     if res:
 
         # Get item
-        item = session.query(MenuItem).filter_by(
+        item = db_session.query(MenuItem).filter_by(
                 id = item_id,
                 restaurant_id = res_id
             ).one()
@@ -289,7 +485,7 @@ def editItmPg(res_id, item_id):
                     item.price = request.form['item_price']
                 if item.description != request.form['item_desc']:
                     item.description = request.form['item_desc']
-                session.commit()
+                db_session.commit()
         
         # After editing Item OR
         # Cannot find Item
@@ -308,13 +504,13 @@ def editItmPg(res_id, item_id):
 def delItmPg(res_id, item_id):
     '''Delete Item Page'''
     # Get restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found Restaurant
     if res:
 
         # Get item
-        item = session.query(MenuItem).filter_by(
+        item = db_session.query(MenuItem).filter_by(
                 id = item_id,
                 restaurant_id = res_id
             ).one()
@@ -331,8 +527,8 @@ def delItmPg(res_id, item_id):
                     )
             
             # POST
-            session.delete(item)
-            session.commit()
+            db_session.delete(item)
+            db_session.commit()
 
         # After deleting Restaurant OR
         # Cannot find item
@@ -349,13 +545,13 @@ def delItmPg(res_id, item_id):
 def itmJSON(res_id, item_id):
     '''Each Item in JSON format'''
     # Get restaurant
-    res = session.query(Restaurant).filter_by(id = res_id).one()
+    res = db_session.query(Restaurant).filter_by(id = res_id).one()
 
     # Found Restaurant
     if res:
 
         # Get item
-        item = session.query(MenuItem).filter_by(
+        item = db_session.query(MenuItem).filter_by(
                 id = item_id,
                 restaurant_id = res_id
             ).one()
