@@ -57,6 +57,7 @@ class Restaurant(Base):
         return {
             'name' : self.name,
             'id' : self.id,
+            'creater_id' : self.creater_id
         }
 
 
@@ -82,7 +83,8 @@ class MenuItem(Base):
             'name' : self.name,
             'price' : self.price,
             'description' : self.description,
-            'course' : self.course
+            'course' : self.course,
+            'creater_id' : self.creater_id
         }
 
 

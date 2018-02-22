@@ -16,11 +16,11 @@ import random
 import string
 
 # To use SQLAlchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import sessionmaker
 
 # To use the tables classes we setup in our database
-from database_setup import Base, Restaurant, MenuItem
+from database_setup import Base, Restaurant, MenuItem, User
 
 # To use OAuth 2
 # This creates a flow object from client secretes JSON file
@@ -44,7 +44,7 @@ import requests
 app = Flask(__name__)
 
 # Setting database
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///restaurantmenuwithusers.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -94,7 +94,7 @@ def index():
 @app.route(login_path, methods=['GET'])
 def loginPg():
     '''Login Page for Google Sign-in'''
-    print(request.referrer)
+    print("\nPrevious Page: " + request.referrer)
     state_token = ''
     for i in range(0, 32):
         state_token += random.choice(string.ascii_letters + string.digits)
@@ -231,6 +231,16 @@ def gconnect():
     session['picture'] = userinfo['picture']  # picture URL
     session['email'] = userinfo['email']
 
+    user_id = getUserID()
+    if user_id is None:
+        createUser()
+        print("New User Created!")
+    
+    print('\nUser Table:')
+    users = db_session.query(User).all()
+    for user in users:
+        print(str(user.id) + ": " + user.name + ": " + user.email)
+
     flash("you are now logged in as {}".format(session['username']))
 
     print("done!")
@@ -312,7 +322,15 @@ def allResPg():
 
     # Found Restaurants table
     if all_res:
-        return render_template('all_res.html', all_res=all_res)
+        user_id = 0
+        if 'username' in session:
+            user_id = getUserID()
+
+        return render_template(
+                'all_res.html',
+                all_res=all_res,
+                user_id=user_id
+            )
 
     # Cannot find Restaurants table
     return redirect(url_for('index'))
@@ -351,7 +369,8 @@ def addResPg():
         return redirect(url_for('addResPg'))
 
     # Input not empty
-    new_res = Restaurant(name=request.form['res_name'])
+    user_id = getUserID()
+    new_res = Restaurant(name=request.form['res_name'], creater_id=user_id)
     db_session.add(new_res)
     db_session.commit()
 
@@ -368,10 +387,26 @@ def resPg(res_id):
 
     # Found restaurant
     if res:
-        # Get the restaurant's menu items
-        items = db_session.query(MenuItem).filter_by(restaurant_id=res.id)
+        # Get creater for creater name
+        creater = getUser(res.creater_id)
 
-        return render_template('res.html', res=res, items=items)
+        # Found creater
+        if creater:
+            # Get the restaurant's menu items
+            items = db_session.query(MenuItem).filter_by(restaurant_id=res.id)
+
+            # Get user id
+            user_id = 0
+            if 'username' in session:
+                user_id = getUserID()
+
+            return render_template(
+                    'res.html',
+                    res=res,
+                    creater_name=creater.name,
+                    user_id = user_id,
+                    items=items
+                )
 
     # Cannot find Restaurant
     return redirect(url_for('allResPg'))
@@ -648,6 +683,32 @@ def itmJSON(res_id, item_id):
 
             return jsonify(MenuItem=item.serialize)
 
+
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# Assigning user from session
+def createUser():
+    '''Create new User'''
+    newUser = User(
+            name=session['username'],
+            email=session['email'],
+            picture=session['picture']
+        )
+    db_session.add(newUser)
+    db_session.commit()
+
+def getUser(user_id):
+    '''Get User Information from User ID'''
+    user = db_session.query(User).filter_by(id=user_id).one()
+    return user
+
+def getUserID():
+    '''Get User ID number from ``session['email']``'''
+    try:
+        user = db_session.query(User).filter_by(email=session['email']).first()
+        return user.id
+    except:
+        return None
 
 # Start server when this file is run
 if __name__ == '__main__':

@@ -5,9 +5,10 @@
       type=text/css
       href="{{ url_for('static', filename='styles.css') }}">
   </head>
-  <title>{{res.name}}</title>
+  <title>{{res_name}}</title>
   <body>
-    <h3>{{res.name}}</h3>
+    <h3>{{res_name}}</h3>
+    <h5>Created by {{creater_name}}</h5>
     <a href="{{url_for('allResPg')}}">Go back</a><br>
     <br>
     <a href="{{url_for('addItmPg', res_id = res.id)}}">Add Item</a><br>
@@ -18,12 +19,14 @@
       $ {{item.price}}<br>
       {{item.description}}
     </p>
+    {% if res.creater_id|int() == user_id|int() %}
     <a href=
         "{{url_for('editItmPg', res_id = res.id, item_id = item.id)}}">
       Edit</a>
     <a href="{{url_for('delItmPg', res_id = res.id, item_id = item.id)}}">
       Delete</a><br>
     <br>
+    {% endif %}
     {% endfor %}
   </body>
 </html>
