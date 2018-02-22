@@ -155,15 +155,11 @@ def gconnect():
 
     # Get Access token from the obtained Credentials object
     access_token = credentials.access_token
-
     # Google API URL to validate the Access Token
     url = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={}'.format(access_token)
     # Perform JSON decode on HTTP GET request response of the url
     # to get the validation result
     result = json.loads(httplib2.Http().request(url, 'GET')[1].decode())
-
-    print('\n>> Result is')
-    print(json.dumps(result, indent=4, sort_keys=True))
 
     # Check for errors in result
     if result.get('error') != None:
@@ -202,6 +198,8 @@ def gconnect():
     stored_access_token = session.get('access_token')
     stored_gplus_id = session.get('gplus_id')
     if stored_access_token != None and gplus_id == stored_gplus_id:
+        # Updating access token with the latest one
+        session['access_token'] = credentials.access_token
         # Make and send a 200 OK response with a message by encoding with JSON
         response = make_response(
             json.dumps('Current user is already connected.'), 200)
@@ -268,8 +266,6 @@ def gdisconnect():
     url = 'https://accounts.google.com/o/oauth2/revoke?token={}'.format(session['access_token'])
     # store the response
     result = httplib2.Http().request(url, 'GET')[0]
-    print('\n>> Result is')
-    print(json.dumps(result, indent=4, sort_keys=True))
 
     # Check if the response is 200 OK
     if result['status'] == '200':
