@@ -53,6 +53,7 @@ db_session = DBSession()
 root_path = '/' ##
 login_path = '/login' ##
 login_success_path = '/gconnect' #
+logout_path = '/gdisconnect' #
 ## Restaurants
 all_res_path = root_path + 'restaurants/' ##
 add_res_path = all_res_path + 'add/' ##
@@ -161,6 +162,9 @@ def gconnect():
     # to get the validation result
     result = json.loads(httplib2.Http().request(url, 'GET')[1].decode())
 
+    print('\n>> Result is')
+    print(json.dumps(result, indent=4, sort_keys=True))
+
     # Check for errors in result
     if result.get('error') != None:
         # Make and send error response 500 Internal Server Error with the error message from result by encoding with JSON
@@ -238,6 +242,55 @@ def gconnect():
             name = session['username'],
             pic_url = session['picture']
         )
+
+#========================
+# Logout Page
+@app.route(logout_path, methods = ['GET'])
+def gdisconnect():
+    '''Logout Page'''
+    # To only disconnect a connected user, check Access Token
+    access_token = session.get('access_token')
+
+    # If Access Token is None, then the user is not connected before
+    if access_token == None:
+        print('Access Token is None')
+        # Make and send error response 401 with a message by encoding with JSON
+        response = make_response(json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 401
+    
+    # If Access Token is Available
+    print('\n>> In gdisconnect access token is:\n' + access_token)
+    print('>> User name is: ' + session['username'])
+
+    # Send the Access Token to Google to revoke access to that token
+    url = 'https://accounts.google.com/o/oauth2/revoke?token={}'.format(session['access_token'])
+    # store the response
+    result = httplib2.Http().request(url, 'GET')[0]
+    print('\n>> Result is')
+    print(json.dumps(result, indent=4, sort_keys=True))
+
+    # Check if the response is 200 OK
+    if result['status'] == '200':
+        # Delete all the session variables used for that user
+        del session['access_token']
+        del session['gplus_id']
+        del session['username']
+        del session['email']
+        del session['picture']
+        # Make and send a 200 OK response with a message by encoding with JSON 
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response # 200
+
+    # If the response from google was NOT 200 OK
+    # Make and send error response 400 with a message by encoding with JSON
+    response = make_response(json.dumps('Failed to revoke token for given user.'), 400)
+    response.headers['Content-Type'] = 'application/json'
+
+    return response # 400
 
 
 #========================
