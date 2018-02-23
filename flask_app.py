@@ -94,7 +94,7 @@ def index():
 @app.route(login_path, methods=['GET'])
 def loginPg():
     '''Login Page for Google Sign-in'''
-    print("\nPrevious Page: " + request.referrer)
+    print("\nLogin Page's - Previous Page: " + request.referrer)
     state_token = ''
     for i in range(0, 32):
         state_token += random.choice(string.ascii_letters + string.digits)
@@ -118,6 +118,7 @@ def loginPg():
 @app.route(login_success_path, methods=['POST'])
 def gconnect():
     '''Google Sign-in response handler'''
+    print("\nGConnect Page's - Previous Page: " + request.referrer)
     # If session's argument state (state_token) doesn't match with the
     # response's state argument, return error 401.
     # Round-trip verification
@@ -493,6 +494,11 @@ def delResPg(res_id):
             return render_template('del_res.html', res_name=res.name)
 
         # POST
+        # First delete the items of the restaurant
+        items = db_session.query(MenuItem).filter_by(restaurant_id=res_id)
+        for item in items:
+            db_session.delete(item)
+        # Next delete the restaurant
         db_session.delete(res)
         db_session.commit()
 

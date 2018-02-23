@@ -5,9 +5,9 @@
       type=text/css
       href="{{ url_for('static', filename='styles.css') }}">
   </head>
-  <title>{{res_name}}</title>
+  <title>{{res.name}}</title>
   <body>
-    <h3>{{res_name}}</h3>
+    <h3>{{res.name}}</h3>
     <h5>Created by {{creater_name}}</h5>
     <a href="{{url_for('allResPg')}}">Go back</a><br>
     <br>
