@@ -10,8 +10,15 @@
     <h3>{{res.name}}</h3>
     <h5>Created by {{creater_name}}</h5>
     <a href="{{url_for('allResPg')}}">Go back</a><br>
+    {% if logged_in == False %}
     <br>
+    <p>If you are the creater of this restaurant,</p>
+    <a href="{{url_for('loginPg')}}">Please login to make changes</a>
+    {% else %}
+        {% if res.creater_id|int() == user_id|int() %}
     <a href="{{url_for('addItmPg', res_id = res.id)}}">Add Item</a><br>
+        {% endif %}
+    {% endif %}
     <br>
     {% for item in items %}
     <p>
@@ -19,14 +26,22 @@
       $ {{item.price}}<br>
       {{item.description}}
     </p>
-    {% if res.creater_id|int() == user_id|int() %}
+        {% if res.creater_id|int() == user_id|int() and logged_in == True %}
     <a href=
         "{{url_for('editItmPg', res_id = res.id, item_id = item.id)}}">
       Edit</a>
     <a href="{{url_for('delItmPg', res_id = res.id, item_id = item.id)}}">
       Delete</a><br>
     <br>
-    {% endif %}
+        {% endif %}
     {% endfor %}
+    <br>
+    <p>
+      <b>Note:</b> Only the creater of the restaurant can edit, delete or
+      modify items in it.
+    </p>
+    {% if logged_in == True %}
+    <br><a href="{{url_for('gdisconnectPg')}}">Logout</a>
+    {% endif %}
   </body>
 </html>

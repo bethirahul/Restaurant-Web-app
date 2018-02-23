@@ -16,10 +16,18 @@
     {% for res in all_res %}
     <br><br>
     <a href="{{url_for('resPg', res_id = res.id)}}">{{res.name}}</a><br>
-    {% if res.creater_id|int() == user_id|int() %}
+        {% if res.creater_id|int() == user_id|int() and logged_in == True %}
     <a href="{{url_for('editResPg', res_id = res.id)}}">Edit</a>
     <a href="{{url_for('delResPg', res_id = res.id)}}">Delete</a>
-    {% endif %}
+        {% endif %}
     {% endfor %}
+    <br>
+    <p>
+      <b>Note:</b> Only the creater of the restaurant can edit, delete or
+      modify items in it.
+    </p>
+    {% if logged_in == True %}
+    <br><a href="{{url_for('gdisconnectPg')}}">Logout</a>
+    {% endif %}
   </body>
 </html>

@@ -424,12 +424,15 @@ def resPg(res_id):
 
             # Get user id
             user_id = 0
+            logged_in = False
             if 'username' in session:
                 user_id = getUserID()
+                logged_in = True
 
             return render_template(
                     'res.html',
                     res=res,
+                    logged_in=logged_in,
                     creater_name=creater.name,
                     user_id = user_id,
                     items=items
