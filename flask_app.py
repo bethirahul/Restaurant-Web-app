@@ -86,7 +86,13 @@ APPLICATION_NAME = "Restaurant Menu Application"
 @app.route(root_path, methods=['GET'])
 def index():
     '''Home Page'''
-    return render_template('index.html')
+
+    logged_in = False
+    if 'username' in session:
+        user_id = getUserID()
+        logged_in = True
+
+    return render_template('index.html', logged_in=logged_in)
 
 
 # ========================
@@ -94,7 +100,15 @@ def index():
 @app.route(login_path, methods=['GET'])
 def loginPg():
     '''Login Page for Google Sign-in'''
-    print("\nLogin Page's - Previous Page: " + request.referrer)
+
+    # Get previous website path to redirect back
+    if request.referrer is None:
+        prev_path = ''
+    else:
+        prev_path = request.referrer
+    print("\nLogin Page's - Previous Page: " + prev_path)
+
+    # Generate Random token
     state_token = ''
     for i in range(0, 32):
         state_token += random.choice(string.ascii_letters + string.digits)
@@ -110,7 +124,7 @@ def loginPg():
     return render_template(
             'login.html',
             STATE=state_token,
-            all_res_path=all_res_path
+            prev_path=prev_path
         )
 
 
@@ -118,7 +132,6 @@ def loginPg():
 @app.route(login_success_path, methods=['POST'])
 def gconnect():
     '''Google Sign-in response handler'''
-    print("\nGConnect Page's - Previous Page: " + request.referrer)
     # If session's argument state (state_token) doesn't match with the
     # response's state argument, return error 401.
     # Round-trip verification
@@ -265,8 +278,16 @@ def gconnect():
 # ========================
 # Logout Page
 @app.route(logout_path, methods=['GET'])
-def gdisconnect():
+def gdisconnectPg():
     '''Logout Page'''
+
+    # Get previous website path to redirect back
+    if request.referrer is None:
+        prev_path = ''
+    else:
+        prev_path = request.referrer
+    print("\nLogin Page's - Previous Page: " + prev_path)
+
     # To only disconnect a connected user, check Access Token
     access_token = session.get('access_token')
 
@@ -299,10 +320,12 @@ def gdisconnect():
         del session['email']
         del session['picture']
         # Make and send a 200 OK response with a message by encoding with JSON
-        response = make_response(json.dumps('Successfully disconnected.'), 200)
-        response.headers['Content-Type'] = 'application/json'
+        # response = make_response(json.dumps('Successfully disconnected.'), 200)
+        # response.headers['Content-Type'] = 'application/json'
 
-        return response  # 200
+        # return response  # 200
+
+        return render_template('logout.html', prev_path=prev_path)
 
     # If the response from google was NOT 200 OK
     # Make and send error response 400 with a message by encoding with JSON
@@ -324,11 +347,14 @@ def allResPg():
     # Found Restaurants table
     if all_res:
         user_id = 0
+        logged_in = False
         if 'username' in session:
             user_id = getUserID()
+            logged_in = True
 
         return render_template(
                 'all_res.html',
+                logged_in=logged_in,
                 all_res=all_res,
                 user_id=user_id
             )
@@ -374,7 +400,7 @@ def addResPg():
     new_res = Restaurant(name=request.form['res_name'], creater_id=user_id)
     db_session.add(new_res)
     db_session.commit()
-
+    
     return redirect(url_for('allResPg'))
 
 

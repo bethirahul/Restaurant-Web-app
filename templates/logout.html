@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+  <title>Logged out!</title>
+  <body>
+    <h1>You have logged out!</h1>
+    <p>Redirecting back...</p>
+    <script>
+        setTimeout(
+            // run this function after 3.5 secs
+            function()
+            {
+                // redirects to the path
+                window.location.href =
+                    "{{prev_path}}";
+            },
+            // ^^single line function
+            3500
+            // time to wait and redirect - 3.5 sec
+        );
+    </script>
+  </body>
+</html>

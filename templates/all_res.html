@@ -8,7 +8,11 @@
   <title>Restaurants</title>
   <body>
     <h1>Restaurants:</h1><br>
+    {% if logged_in == False %}
+    <a href="{{url_for('loginPg')}}">Please Login to Add a new Restaurant</a>
+    {% else %}
     <a href="{{url_for('addResPg')}}">Add new Restaurant</a>
+    {% endif %}
     {% for res in all_res %}
     <br><br>
     <a href="{{url_for('resPg', res_id = res.id)}}">{{res.name}}</a><br>

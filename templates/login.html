@@ -69,16 +69,16 @@
                                         '<br>Redirecting...'
                                     )
                                     setTimeout(
-                                        // run this function after 4 secs
+                                        // run this function after 3.5 secs
                                         function()
                                         {
                                             // redirects to the path
                                             window.location.href =
-                                                "{{all_res_path}}";
+                                                "{{prev_path}}";
                                         },
                                         // ^^single line function
-                                        4000
-                                        // time to wait and redirect - 4 sec
+                                        3500
+                                        // time to wait and redirect - 3.5 sec
                                     );
                                 }
                                 // If result is not obtained and received error,
@@ -104,12 +104,7 @@
         }
     </script>
     <!-- END GOOGLE SIGN IN BUTTON -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-    <p>{{message}}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <br>
+    <a href="{{prev_path}}">Go back</a>
   </body>
 </html>
