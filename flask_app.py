@@ -53,8 +53,10 @@ db_session = DBSession()
 # Home Page
 root_path = '/'
 login_path = '/login'
-login_success_path = '/gconnect'
-logout_path = '/gdisconnect'
+g_login_success_path = '/gconnect'
+fb_login_success_path = '/fbconnect'
+g_logout_path = '/gdisconnect'
+fb_logout_path = '/fbdisconnect'
 # -> Restaurants
 all_res_path = root_path + 'restaurants/'
 add_res_path = all_res_path + 'add/'
@@ -99,7 +101,7 @@ def index():
 # Login Page
 @app.route(login_path, methods=['GET'])
 def loginPg():
-    '''Login Page for Google Sign-in'''
+    '''Login Page'''
 
     # Get previous website path to redirect back
     if request.referrer is None:
@@ -128,13 +130,14 @@ def loginPg():
         )
 
 
-# Login Success Response - POST
-@app.route(login_success_path, methods=['POST'])
+# Google Login Success Response - POST
+@app.route(g_login_success_path, methods=['POST'])
 def gconnect():
     '''Google Sign-in response handler'''
     # If session's argument state (state_token) doesn't match with the
     # response's state argument, return error 401.
     # Round-trip verification
+    # [To stop Cross-site Reference Forgery attacks]
     if request.args.get('state') != session['state']:
         # Make and send error response 401 with a message by encoding with JSON
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -173,8 +176,7 @@ def gconnect():
     # Get Access token from the obtained Credentials object
     access_token = credentials.access_token
     # Google API URL to validate the Access Token
-    url = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token='
-    url += access_token
+    url = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={}'.format(access_token)
     # Perform JSON decode on HTTP GET request response of the url
     # to get the validation result
     result = json.loads(httplib2.Http().request(url, 'GET')[1].decode())
@@ -241,10 +243,12 @@ def gconnect():
     userinfo_response = requests.get(userinfo_url, params=userinfo_parameters)
     userinfo = userinfo_response.json()
 
+    session['provider'] = 'google'
     session['username'] = userinfo['name']
     session['picture'] = userinfo['picture']  # picture URL
     session['email'] = userinfo['email']
 
+    # Check if user is already exists
     user_id = getUserID()
     if user_id is None:
         createUser()
@@ -255,7 +259,102 @@ def gconnect():
     for user in users:
         print(str(user.id) + ": " + user.name + ": " + user.email)
 
-    flash("you are now logged in as {}".format(session['username']))
+    #flash("you are now logged in as {}".format(session['username']))
+
+    print("done!")
+
+    output = '''<h1>Welcome, {name}!</h1>
+    <img
+      src="{pic_url}"
+      style = "
+        width: 300px;
+        height: 300px;
+        border-radius: 150px;
+        -webkit-border-radius: 150px;
+        -moz-border-radius: 150px;">
+    '''
+    return output.format(
+            name=session['username'],
+            pic_url=session['picture']
+        )
+
+
+# Facebook Login success Response - POST
+@app.route(fb_login_success_path, method=['POST'])
+def fbconnect():
+    '''Facebook Sign-in Response handler'''
+    # If session's argument state (state_token) doesn't match with the
+    # response's state argument, return error 401.
+    # Round-trip verification
+    # [To stop Cross-site Reference Forgery attacks]
+    if request.args.get('state') != session['state']:
+        # Make and send error response 401 with a message by encoding with JSON
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response  # 401
+    
+    # If the state_tokens matched
+    # Collect access_token (short_lived) from the Facebook server
+    # Similar to one-time-use code of Google
+    access_token = request.data
+
+    # Trying to use access_token (short_lived) to exchange it with
+    # acess_token (long-lived)
+    app_id = json.loads(
+            open('fb_client_secrets.json', 'r').read()
+        )['web']['app_id']
+    app_secret = json.loads(
+            open('fb_client_secrets.json', 'r').read()
+        )['web']['app_secret']
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}$client_secret={app_secret}&fb_secret_token={access_token}'.format(
+            app_id=app_id,
+            app_secret=app_secret,
+            access_token=access_token
+        )
+    result = httplib2.Http().request(url, 'GET')[1]
+
+    # **Check result error is not done here
+
+    # Get the access_token (long lived) from the response
+    # Response has few fileds
+    #   - Token & Expiration (UNIX time) & signedRequest & userID
+    # Expiration can last upto 2 months
+    access_token = result.split("&")[0]
+    session['access_token'] = access_token
+    session['id'] = 
+
+    # Use token to get user information
+    userinfo_url = 'https://graph.facebook.com/v2.8/me?access_token={}&fields=name,id,email'.format(token)
+    userinfo_response = httplib2.Http().request(userinfo_url, 'GET')[1]
+
+    # Decode the response using JSON to get the user information
+    userinfo = json.loads(userinfo_response)
+    session['provider'] = 'facebook'
+    session['username'] = userinfo['name']
+    session['facebook_id'] = userinfo['id']
+    session['email'] = userinfo['email']
+
+    # Facebook uses different API to get Profile picture
+    picture_url = 'https://graph.facebook.com/v2.2/me/picture?{}&redirect=0&height=200&width=200'.format(token)
+    picture_response = httplib2.Http().request(picture_url, 'GET')[1]
+
+    # Decode the response using JSON to get the picture url
+    picture_info = json.loads(picture_response)
+    session['picture'] = picture_info['data']['url']
+
+    # Check if user is already exists
+    user_id = getUserID()
+    if user_id is None:
+        createUser()
+        print("New User Created!")
+
+    print('\nUser Table:')
+    users = db_session.query(User).all()
+    for user in users:
+        print(str(user.id) + ": " + user.name + ": " + user.email)
+
+    #flash("you are now logged in as {}".format(session['username']))
 
     print("done!")
 
@@ -276,8 +375,8 @@ def gconnect():
 
 
 # ========================
-# Logout Page
-@app.route(logout_path, methods=['GET'])
+# Google Logout Page
+@app.route(g_logout_path, methods=['GET'])
 def gdisconnectPg():
     '''Logout Page'''
 
@@ -304,16 +403,27 @@ def gdisconnectPg():
     # If Access Token is Available
     print('\n>> In gdisconnect access token is:\n' + access_token)
     print('>> User name is: ' + session['username'])
+    print('>> Connected through: ' + session['provider'])
 
-    # Send the Access Token to Google to revoke access to that token
-    url = 'https://accounts.google.com/o/oauth2/revoke?token={}'.format(
+    # Check if connected through google, get Google URL
+    if session['provider'] == 'google':
+        # Send the Access Token to Google to revoke access to that token
+        url = 'https://accounts.google.com/o/oauth2/revoke?token={}'.format(
             session['access_token'])
-    # store the response
+    # Or else Facebook URL
+    else:
+        url = 'https://graph.facebook.com/{}/permissions'.format(
+                session['facebook_id'])
+    # Disconnect and get the response
     result = httplib2.Http().request(url, 'GET')[0]
 
     # Check if the response is 200 OK
     if result['status'] == '200':
         # Delete all the session variables used for that user
+        if session['provider'] == 'facebook':
+            del session['facebook_id']
+
+        del session['provider']
         del session['access_token']
         del session['gplus_id']
         del session['username']

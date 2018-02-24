@@ -45,14 +45,14 @@
                 // and then redirect back to the main restaurants page
                 $.ajax( // JSON code
                     {
-                        type: 'POST',
+                        type: 'POST', // response method POST
                         url: '/gconnect?state={{STATE}}', // our server variable
                         // ^^It is used to very the
                         // cross-site reference forgery attack
                         // False - Ask JQuery not to process the response
                         // into a string
                         processData: false,
-                        // Data being sent to the server >> one-time-use code
+                        // Data being sent to the server >> one-time-use code (binary code)
                         data: authResult['code'],
                         // This indicates we are sending arbitraty binary
                         // stream of data
@@ -116,7 +116,7 @@
             {
                 FB.init(
                     {
-                        appId      : '846524132078825',
+                        appId      : '580027515682590', // App ID
                         cookie     : true,
                         // ^^enable cookies to allow the server to access 
                         //   the session
@@ -147,24 +147,37 @@
 
         function sendTokenToServer()
         {
+            // Get access Token from Facebook by calling an SDK function for it
             var access_token = FB.getAuthResponse()['accessToken'];
-            console.log(access_token)
-
             console.log('Welcome!  Fetching your information.... ');
-
+            console.log(access_token)
+            
+            // Facebook SDK function to make API calls
             FB.api(
                 '/me',
                 function(response)
-                {
+                {   
                     console.log('Successful login for: ' + response.name);
-
-                    $.ajax(
+                    // ^^Because 'sendTokenToServer' function is called after
+                    //   succesful login
+                    
+                    // Now send token to Facebook server via Ajax call
+                    $.ajax( // JSON code
                         {
-                            type: 'POST',
-                            url: '/fbconnect?state={{STATE}}',
+                            type: 'POST', // response method POST
+                            url: '/fbconnect?state={{STATE}}', // our server variable
+                            // ^^It is used to very the
+                            // cross-site reference forgery attack
+                            // False - Ask JQuery not to process the response
+                            // into a string
                             processData: false,
+                            // Data being sent to the server >> access_token (binary code)
                             data: access_token,
+                            // This indicates we are sending arbitraty binary
+                            // stream of data
                             contentType: 'application/octet-stream; charset=utf-8',
+                            // After getting 200 OK response
+                            // return a succesful login response to the user
                             success: function(result)
                                 {
                                     // Handle or verify the server response
@@ -178,7 +191,7 @@
                                             {
                                                 window.location.href = "/restaurant";
                                             },
-                                            4000
+                                            3500
                                         );
                                     }
                                     else
@@ -194,6 +207,10 @@
     </script>
     
     <button>
+      <!-- Uses Facebook SDK in order to load Facebook Log-in button -->
+      <!-- scope attribute tells the scope of authorization -->
+      <!-- ^^Profile pic and email address are taken -->
+      <!-- onlogin attribute function is called when on login -->
       <fb:login-button
           scope="public_profile,email"
           onlogin="sendTokenToServer();">
