@@ -20,13 +20,23 @@ session = DBSession()
 
 
 # Create dummy users
-User1 = User(name="Robo Barista", email="tinnyTim@udacity.com",
-             picture='https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png')
+User1 = User(
+        name="Robo Barista",
+        email="tinnyTim@udacity.com",
+        picture='https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png',
+        user_id='robo_barista',
+        provider='udacity'
+    )
 session.add(User1)
 session.commit()
 
-User2 = User(name="Rahul Bethi", email="rahulbethi@hotmail.com",
-             picture='https://pbs.twimg.com/profile_images/520580979182686208/4BbCJfqW_400x400.jpeg')
+User2 = User(
+        name="Rahul Bethi",
+        email="rahulbethi@hotmail.com",
+        picture='https://pbs.twimg.com/profile_images/520580979182686208/4BbCJfqW_400x400.jpeg',
+        user_id='bethirahul',
+        provider='hotmail'
+    )
 session.add(User2)
 session.commit()
 

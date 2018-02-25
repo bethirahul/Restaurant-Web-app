@@ -55,8 +55,8 @@ root_path = '/'
 login_path = '/login'
 g_login_success_path = '/gconnect'
 fb_login_success_path = '/fbconnect'
-g_logout_path = '/gdisconnect'
-fb_logout_path = '/fbdisconnect'
+logout_path = '/disconnect'
+#fb_logout_path = '/fbdisconnect'
 # -> Restaurants
 all_res_path = root_path + 'restaurants/'
 add_res_path = all_res_path + 'add/'
@@ -217,7 +217,7 @@ def gconnect():
 
     # Check if User is already Logged-in
     stored_access_token = session.get('access_token')
-    stored_gplus_id = session.get('gplus_id')
+    stored_gplus_id = session.get('id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
         # Updating access token with the latest one
         session['access_token'] = credentials.access_token
@@ -231,7 +231,7 @@ def gconnect():
     # If the User is not Logged-in before, store the credentials and Google ID
     # to check for Logged-in next time - to avoid Logging-in again
     session['access_token'] = credentials.access_token
-    session['gplus_id'] = gplus_id
+    session['user_id'] = gplus_id
 
     # Get Google User Info
     userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
@@ -263,7 +263,7 @@ def gconnect():
 
     print("done!")
 
-    output = '''<h1>Welcome, {name}!</h1>
+    output = '''<h1>Welcome, {name} ({user_id}) [{provider}]!</h1>
     <img
       src="{pic_url}"
       style = "
@@ -275,12 +275,14 @@ def gconnect():
     '''
     return output.format(
             name=session['username'],
+            user_id=session['user_id'],
+            provider=session['provider'],
             pic_url=session['picture']
         )
 
 
 # Facebook Login success Response - POST
-@app.route(fb_login_success_path, method=['POST'])
+@app.route(fb_login_success_path, methods=['POST'])
 def fbconnect():
     '''Facebook Sign-in Response handler'''
     # If session's argument state (state_token) doesn't match with the
@@ -297,51 +299,76 @@ def fbconnect():
     # If the state_tokens matched
     # Collect access_token (short_lived) from the Facebook server
     # Similar to one-time-use code of Google
-    access_token = request.data
+    access_token = request.data.decode()
 
     # Trying to use access_token (short_lived) to exchange it with
     # acess_token (long-lived)
     app_id = json.loads(
             open('fb_client_secrets.json', 'r').read()
         )['web']['app_id']
+    #print("\nApp ID: " + app_id)
     app_secret = json.loads(
             open('fb_client_secrets.json', 'r').read()
         )['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}$client_secret={app_secret}&fb_secret_token={access_token}'.format(
+    #print("App Secret: " + app_secret )
+    # url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}$client_secret={app_secret}&fb_secret_token={access_token}'.format(
+    #         app_id=app_id,
+    #         app_secret=app_secret,
+    #         access_token=access_token
+    #     )
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}&client_secret={app_secret}&fb_exchange_token={access_token}'.format(
             app_id=app_id,
             app_secret=app_secret,
             access_token=access_token
         )
+    #print('------------------------------------------------')
+    #print("Sending short-lived-token for long-lived-token:\n" + url)
     result = httplib2.Http().request(url, 'GET')[1]
+    #print("\nResponse for long lived access_token:")
+    #print(result)
 
     # **Check result error is not done here
 
     # Get the access_token (long lived) from the response
-    # Response has few fileds
-    #   - Token & Expiration (UNIX time) & signedRequest & userID
-    # Expiration can last upto 2 months
-    access_token = result.split("&")[0]
-    session['access_token'] = access_token
-    session['id'] = 
+    #token = result.split("&")[0]
+    token = json.loads(result.decode())['access_token']
+    #print("\nDecoded token:")
+    #print(token)
+    session['access_token'] = token
 
     # Use token to get user information
-    userinfo_url = 'https://graph.facebook.com/v2.8/me?access_token={}&fields=name,id,email'.format(token)
+    userinfo_url = 'https://graph.facebook.com/v2.8/me?access_token={}&fields=name,id,email,picture'.format(token)
+    #print('------------------------------------------------')
+    #print("Sending for user information:\n" + userinfo_url)
     userinfo_response = httplib2.Http().request(userinfo_url, 'GET')[1]
+    #print("\nResponse for user information:")
+    #print(userinfo_response)
 
     # Decode the response using JSON to get the user information
-    userinfo = json.loads(userinfo_response)
+    userinfo = json.loads(userinfo_response.decode())
+    #print("\nDecoded user info:")
+    #print(userinfo)
     session['provider'] = 'facebook'
     session['username'] = userinfo['name']
-    session['facebook_id'] = userinfo['id']
+    session['user_id'] = userinfo['id']
     session['email'] = userinfo['email']
+    session['picture'] = userinfo['picture']['data']['url']
+    pic_width = userinfo['picture']['data']['width']
+    pic_height = userinfo['picture']['data']['height']
 
     # Facebook uses different API to get Profile picture
-    picture_url = 'https://graph.facebook.com/v2.2/me/picture?{}&redirect=0&height=200&width=200'.format(token)
-    picture_response = httplib2.Http().request(picture_url, 'GET')[1]
+    # picture_url = 'https://graph.facebook.com/v2.2/me/picture?{}&redirect=0&height=200&width=200'.format(token)
+    # print('------------------------------------------------')
+    # print("Sending for picture:\n" + picture_url)
+    # picture_response = httplib2.Http().request(picture_url, 'GET')[1]
+    # print("\nResponse for picture:")
+    # print(picture_response)
 
-    # Decode the response using JSON to get the picture url
-    picture_info = json.loads(picture_response)
-    session['picture'] = picture_info['data']['url']
+    # # Decode the response using JSON to get the picture url
+    # picture_info = json.loads(picture_response.decode())
+    # print("\nDecoded picture response:")
+    # print(picture_info)
+    # session['picture'] = picture_info['data']['url']
 
     # Check if user is already exists
     user_id = getUserID()
@@ -358,35 +385,42 @@ def fbconnect():
 
     print("done!")
 
-    output = '''<h1>Welcome, {name}!</h1>
+    output = '''<h1>Welcome, {name} ({user_id}) [{provider}]!</h1>
     <img
       src="{pic_url}"
       style = "
-        width: 300px;
-        height: 300px;
+        width: {pic_width}px;
+        height: {pic_height}px;
         border-radius: 150px;
         -webkit-border-radius: 150px;
         -moz-border-radius: 150px;">
     '''
     return output.format(
             name=session['username'],
-            pic_url=session['picture']
+            user_id=session['user_id'],
+            provider=session['provider'],
+            pic_url=session['picture'],
+            pic_width=pic_width,
+            pic_height=pic_height
         )
 
 
 # ========================
-# Google Logout Page
-@app.route(g_logout_path, methods=['GET'])
-def gdisconnectPg():
+# Logout Page
+@app.route(logout_path, methods=['GET'])
+def disconnectPg():
     '''Logout Page'''
+    # Check for facebook login and redirect to facebook disconnect
+    #if session['provider'] == 'facebook':
+    #    return redirect(url_for('fbdisconnectPg'))
 
-    # Get previous website path to redirect back
+     # Get previous website path to redirect back
     if request.referrer is None:
         prev_path = ''
     else:
         prev_path = request.referrer
     print("\nLogin Page's - Previous Page: " + prev_path)
-
+    
     # To only disconnect a connected user, check Access Token
     access_token = session.get('access_token')
 
@@ -401,7 +435,7 @@ def gdisconnectPg():
         return response  # 401
 
     # If Access Token is Available
-    print('\n>> In gdisconnect access token is:\n' + access_token)
+    print('\n>> In Google Disconnect Page, access token is:\n' + access_token)
     print('>> User name is: ' + session['username'])
     print('>> Connected through: ' + session['provider'])
 
@@ -409,23 +443,27 @@ def gdisconnectPg():
     if session['provider'] == 'google':
         # Send the Access Token to Google to revoke access to that token
         url = 'https://accounts.google.com/o/oauth2/revoke?token={}'.format(
-            session['access_token'])
+        session['access_token'])
     # Or else Facebook URL
     else:
-        url = 'https://graph.facebook.com/{}/permissions'.format(
-                session['facebook_id'])
+        #url = 'https://graph.facebook.com/{}/permissions'.format(
+        #        session['user_id'])
+        url = 'https://graph.facebook.com/v2.8/{user_id}/permissions?method=delete&access_token={access_token}'.format(
+                user_id=session['user_id'],
+                access_token=session['access_token']
+            )
+        #return redirect(url_for('fbdisconnectPg'))
     # Disconnect and get the response
     result = httplib2.Http().request(url, 'GET')[0]
+    print("\nResponse for logout:")
+    print(result)
 
     # Check if the response is 200 OK
     if result['status'] == '200':
         # Delete all the session variables used for that user
-        if session['provider'] == 'facebook':
-            del session['facebook_id']
-
         del session['provider']
         del session['access_token']
-        del session['gplus_id']
+        del session['user_id']
         del session['username']
         del session['email']
         del session['picture']
@@ -435,7 +473,7 @@ def gdisconnectPg():
 
         # return response  # 200
 
-        return render_template('logout.html', prev_path=prev_path)
+        return render_template('logout.html', next_page=prev_path)
 
     # If the response from google was NOT 200 OK
     # Make and send error response 400 with a message by encoding with JSON
@@ -444,6 +482,57 @@ def gdisconnectPg():
     response.headers['Content-Type'] = 'application/json'
 
     return response  # 400
+
+
+# Facebook Logout
+# @app.route(fb_logout_path, methods=['DELETE'])
+# def fbdisconnectPg():
+#     '''Facebook Logout Page'''
+#     # To only disconnect a connected user, check Access Token
+#     access_token = session.get('access_token')
+
+#     # If Access Token is None, then the user is not connected before
+#     if access_token is None:
+#         print('Access Token is None')
+#         # Make and send error response 401 with a message by encoding with JSON
+#         response = make_response(
+#                 json.dumps('Current user not connected.'), 401)
+#         response.headers['Content-Type'] = 'application/json'
+
+#         return response  # 401
+    
+#     # If Access Token is Available
+#     print('\n>> In Facebook Disconnect Page, access token is:\n' + access_token)
+#     print('>> User name is: ' + session['username'])
+
+#     # Send the User ID to Facebook to revoke access to that user
+#     url = 'https://graph.facebook.com/{}/permissions'.format(
+#         session['user_id'])
+    
+#     # Disconnect and get the response
+#     result = httplib2.Http().request(url, 'GET')[0]
+#     print("\nResponse for logout:")
+#     print(result)
+
+#     # Check if the response is 200 OK
+#     if result['status'] == '200':
+#         # Delete all the session variables used for that user
+#         delSession()
+#         # Make and send a 200 OK response with a message by encoding with JSON
+#         # response = make_response(json.dumps('Successfully disconnected.'), 200)
+#         # response.headers['Content-Type'] = 'application/json'
+
+#         # return response  # 200
+
+#         return render_template('logout.html')
+    
+#     # If the response from google was NOT 200 OK
+#     # Make and send error response 400 with a message by encoding with JSON
+#     response = make_response(
+#             json.dumps('Failed to revoke token for given user.'), 400)
+#     response.headers['Content-Type'] = 'application/json'
+
+#     return response  # 400
 
 
 # ========================
@@ -837,7 +926,9 @@ def createUser():
     newUser = User(
             name=session['username'],
             email=session['email'],
-            picture=session['picture']
+            picture=session['picture'],
+            user_id=session['user_id'],
+            provider=session['provider']
         )
     db_session.add(newUser)
     db_session.commit()
@@ -854,6 +945,7 @@ def getUserID():
         return user.id
     except:
         return None
+
 
 # Start server when this file is run
 if __name__ == '__main__':

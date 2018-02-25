@@ -29,6 +29,8 @@ class User(Base):
     name = Column(String(250), nullable=False)
     email = Column(String(250), nullable=False)
     picture = Column(String(250))
+    user_id = Column(String(250), nullable=False)
+    provider = Column(String(250), nullable=False)
 
     # Code to define what to send (in each restaurant) in JSON format
     @property
@@ -38,7 +40,9 @@ class User(Base):
             'name' : self.name,
             'id' : self.id,
             'email' : self.email,
-            'picture' : self.picture
+            'picture' : self.picture,
+            'user_id' : self.user_id,
+            'provider' : self.provider
         }
 
 
