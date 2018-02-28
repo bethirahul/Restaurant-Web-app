@@ -664,7 +664,7 @@ def resJSON(res_id):
 # Edit Restaurant Page
 @app.route(
     edit_res_path.format(res_id='<int:res_id>'),
-    methods=['GET', 'PUT']
+    methods=['GET', 'POST']
 )
 def editResPg(res_id):
     '''Edit Restaurant Page'''
@@ -685,7 +685,7 @@ def editResPg(res_id):
                     res_name=res.name
                 )
 
-        # PUT
+        # POST
         # Input empty
         if request.form['res_name'] == '':
             flash('Error: Restaurant name cannot be empty!')
@@ -704,7 +704,7 @@ def editResPg(res_id):
 # ========================
 # Delete Restaurant Page
 @app.route(
-    del_res_path.format(res_id='<int:res_id>'), methods=['GET', 'DELETE'])
+    del_res_path.format(res_id='<int:res_id>'), methods=['GET', 'POST'])
 def delResPg(res_id):
     '''Delete Restaurant Page'''
     # Check if Logged in
@@ -721,7 +721,7 @@ def delResPg(res_id):
         if request.method == 'GET':
             return render_template('del_res.html', res_name=res.name)
 
-        # DELETE
+        # POST
         # First delete the items of the restaurant
         items = db_session.query(MenuItem).filter_by(restaurant_id=res_id)
         for item in items:
@@ -783,7 +783,7 @@ def addItmPg(res_id):
 # Edit Item Page
 @app.route(
     edit_item_path.format(res_id='<int:res_id>', item_id='<int:item_id>'),
-    methods=['GET', 'PUT']
+    methods=['GET', 'POST']
 )
 def editItmPg(res_id, item_id):
     '''Edit Item Page'''
@@ -814,7 +814,7 @@ def editItmPg(res_id, item_id):
                         res=res
                     )
 
-            # PUT
+            # POST
             # Input name empty
             if request.form['item_name'] == '':
                 flash('Error: Item name cannot be empty!')
@@ -850,7 +850,7 @@ def editItmPg(res_id, item_id):
 # Delete Item Page
 @app.route(
     del_item_path.format(res_id='<int:res_id>', item_id='<int:item_id>'),
-    methods=['GET', 'DELETE']
+    methods=['GET', 'POST']
     )
 def delItmPg(res_id, item_id):
     '''Delete Item Page'''
@@ -881,7 +881,7 @@ def delItmPg(res_id, item_id):
                         res=res,
                     )
 
-            # DELETE
+            # POST
             db_session.delete(item)
             db_session.commit()
 
