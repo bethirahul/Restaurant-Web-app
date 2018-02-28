@@ -14,6 +14,9 @@ from sqlalchemy.orm import relationship
 # To use in the configuration code at the end of configuration
 from sqlalchemy import create_engine
 
+# For Hashing passwords
+from passlib.apps import custom_app_context
+
 
 # Instance of the declarative base class
 Base = declarative_base()
@@ -31,6 +34,14 @@ class User(Base):
     picture = Column(String(250))
     user_id = Column(String(250), nullable=False)
     provider = Column(String(250), nullable=False)
+    # ^^Google, Facebook, Local
+    password_hash = Column(String(64))
+
+    def hash_password(self, password):
+        self.password_hash = custom_app_context.encrypt(password)
+    
+    def verify_password(self, password):
+        custom_app_context.verify(password, self.password_hash)
 
     # Code to define what to send (in each restaurant) in JSON format
     @property
