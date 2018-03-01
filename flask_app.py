@@ -90,11 +90,21 @@ def index():
     '''Home Page'''
 
     logged_in = False
+    user_name = ''
+    provider = ''
     if 'username' in session:
-        user_id = getUserID()
+        local_id = getLocalID(session['email'])
+        user = getUser(local_id)
+        user_name = user.name
+        provider = user.provider
         logged_in = True
 
-    return render_template('index.html', logged_in=logged_in)
+    return render_template(
+            'index.html',
+            logged_in=logged_in,
+            user_name=user_name,
+            provider=provider
+        )
 
 
 # ========================
@@ -249,8 +259,8 @@ def gconnect():
     session['email'] = userinfo['email']
 
     # Check if user is already exists
-    user_id = getUserID()
-    if user_id is None:
+    local_id = getLocalID(session['email'])
+    if local_id is None:
         createUser()
         print("New User Created!")
     
@@ -371,8 +381,8 @@ def fbconnect():
     # session['picture'] = picture_info['data']['url']
 
     # Check if user is already exists
-    user_id = getUserID()
-    if user_id is None:
+    local_id = getLocalID(session['email'])
+    if local_id is None:
         createUser()
         print("New User Created!")
 
@@ -548,14 +558,14 @@ def allResPg():
         user_id = 0
         logged_in = False
         if 'username' in session:
-            user_id = getUserID()
+            local_id = getLocalID(session['email'])
             logged_in = True
 
         return render_template(
                 'all_res.html',
                 logged_in=logged_in,
                 all_res=all_res,
-                user_id=user_id
+                user_id=local_id
             )
 
     # Cannot find Restaurants table
@@ -595,8 +605,8 @@ def addResPg():
         return redirect(url_for('addResPg'))
 
     # Input not empty
-    user_id = getUserID()
-    new_res = Restaurant(name=request.form['res_name'], creater_id=user_id)
+    local_id = getLocalID(session['email'])
+    new_res = Restaurant(name=request.form['res_name'], creater_id=local_id)
     db_session.add(new_res)
     db_session.commit()
     
@@ -622,10 +632,10 @@ def resPg(res_id):
             items = db_session.query(MenuItem).filter_by(restaurant_id=res.id)
 
             # Get user id
-            user_id = 0
+            local_id = 0
             logged_in = False
             if 'username' in session:
-                user_id = getUserID()
+                local_id = getLocalID(session['email'])
                 logged_in = True
 
             return render_template(
@@ -633,7 +643,7 @@ def resPg(res_id):
                     res=res,
                     logged_in=logged_in,
                     creater_name=creater.name,
-                    user_id=user_id,
+                    user_id=local_id,
                     items=items
                 )
 
@@ -935,15 +945,15 @@ def createUser(password=''):
     db_session.add(newUser)
     db_session.commit()
 
-def getUser(user_id):
-    '''Get User Information from User ID'''
-    user = db_session.query(User).filter_by(id=user_id).one()
+def getUser(local_id):
+    '''Get User Information from Local ID'''
+    user = db_session.query(User).filter_by(id=local_id).one()
     return user
 
-def getUserID():
-    '''Get User ID number from ``session['email']``'''
+def getLocalID(email):
+    '''Get User ID number with email'''
     try:
-        user = db_session.query(User).filter_by(email=session['email']).first()
+        user = db_session.query(User).filter_by(email=email).first()
         return user.id
     except:
         return None
