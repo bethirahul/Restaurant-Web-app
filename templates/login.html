@@ -31,7 +31,7 @@
         data-callback="signInCallback"
         data-approvalprompt="force">
       </span>
-    </div>
+    </div><br>
     <script>
         function signInCallback(authResult) // data obtained from google server
         {
@@ -110,8 +110,6 @@
         }
     </script>
     <!-- END GOOGLE SIGN IN BUTTON -->
-
-    <br>
 
     <!--FACEBOOK SIGN IN -->
     <script>
@@ -214,8 +212,7 @@
                 }
             );
         }
-    </script>
-    
+    </script>  
     <button id="fbSigninButton">
       <!-- Uses Facebook SDK in order to load Facebook Log-in button -->
       <!-- scope attribute tells the scope of authorization -->
@@ -226,10 +223,13 @@
           onlogin="sendTokenToServer();">
         <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
       </fb:login-button>
-    </button>
+    </button><br>
     <!--END FACEBOOK SIGN IN -->
 
-    <br>
+    <div>
+
+    </div>
+
     <div id="result"></div><br>
     <a href="{{prev_path}}">Go back</a>
   </body>

@@ -633,7 +633,7 @@ def resPg(res_id):
                     res=res,
                     logged_in=logged_in,
                     creater_name=creater.name,
-                    user_id = user_id,
+                    user_id=user_id,
                     items=items
                 )
 
@@ -921,7 +921,7 @@ def itmJSON(res_id, item_id):
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # Assigning user from session
-def createUser():
+def createUser(password=''):
     '''Create new User'''
     newUser = User(
             name=session['username'],
@@ -930,6 +930,8 @@ def createUser():
             user_id=session['user_id'],
             provider=session['provider']
         )
+    #if session['provider'] == 'local':
+    #    newUser.hash_password(password)
     db_session.add(newUser)
     db_session.commit()
 
