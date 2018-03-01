@@ -7,14 +7,25 @@
   </head>
   <title>Restaurants - Home Page</title>
   <body>
-    <h1>Restaurants Menu</h1><br>
-    <a href="{{url_for('allResPg')}}">Show Restaurants</a><br>
-    <br>
-    {% if logged_in == False %}
-    <a href="{{url_for('loginPg')}}">Login</a>
-    {% else %}
-    <p>You are logged-in as {{user_name}} through {{provider}}</p>
-    <a href="{{url_for('disconnectPg')}}">Logout</a>
-    {% endif %}
+    <div class="total-page">
+      <main>
+        <h1>Welcome to my Restaurants Catalogue</h1><br>
+        <h3>
+          <a href="{{url_for('allResPg')}}">Show All Restaurants</a>
+        </h3><br>
+        <br>
+        {% if logged_in == False %}
+        <p>Please login to make changes to the catalogue</p>
+        <h3>
+          <a class="login" href="{{url_for('loginPg')}}">Login</a>
+        </h3>
+        {% else %}
+        <p>You are logged-in as {{user_name}} through {{provider}}</p>
+        <h3>
+          <a class="login" href="{{url_for('disconnectPg')}}">Logout</a>
+        </h3>
+        {% endif %}
+      </main>
+    </div>
   </body>
 </html>
