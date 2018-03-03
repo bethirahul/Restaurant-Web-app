@@ -7,27 +7,38 @@
   </head>
   <title>Restaurants</title>
   <body>
-    <h1>Restaurants:</h1><br>
-    {% if logged_in == False %}
-    <a href="{{url_for('loginPg')}}">Please Login to Add a new Restaurant</a>
-    {% else %}
-    <a href="{{url_for('addResPg')}}">Add new Restaurant</a>
-    {% endif %}
-    {% for res in all_res %}
-    <br><br>
-    <a href="{{url_for('resPg', res_id = res.id)}}">{{res.name}}</a><br>
-        {% if res.creater_id|int() == user_id|int() and logged_in == True %}
-    <a href="{{url_for('editResPg', res_id = res.id)}}">Edit</a>
-    <a href="{{url_for('delResPg', res_id = res.id)}}">Delete</a>
-        {% endif %}
-    {% endfor %}
-    <br>
-    <p>
-      <b>Note:</b> Only the creater of the restaurant can edit, delete or
-      modify items in it.
-    </p>
-    {% if logged_in == True %}
-    <br><a href="{{url_for('disconnectPg')}}">Logout</a>
-    {% endif %}
+    <div class="total-page">
+      <main class="two-columns-layout">
+        <div class="first-column">
+          <h1>Restaurants:</h1>
+          {% if logged_in == False %}
+          <a href="{{url_for('loginPg')}}">Please <b>Login</b> to Add a new Restaurant</a>
+          {% else %}
+          <a href="{{url_for('addResPg')}}">Add new Restaurant</a>
+          {% endif %}
+          <br>
+          {% for res in all_res %}
+          <br>
+          <a href="{{url_for('resPg', res_id = res.id)}}">{{res.name}}</a><br>
+              {% if res.creater_id|int() == user_id|int() and logged_in == True %}
+          <a class="edit-link" href="{{url_for('editResPg', res_id = res.id)}}">Edit</a>
+          <span> - </span>
+          <a class="edit-link" href="{{url_for('delResPg', res_id = res.id)}}">Delete</a><br>
+              {% endif %}
+          {% endfor %}
+          <br>
+          <p>
+            <b>Note:</b> Only the creater of the restaurant can edit, delete or
+            modify items in it.
+          </p>
+          {% if logged_in == True %}
+          <br><a href="{{url_for('disconnectPg')}}">Logout</a>
+          {% endif %}
+        </div>
+        <div class="second-column">
+          <h1>Recent Items:</h1><br>
+        </div>
+      </main>
+    </div>
   </body>
 </html>

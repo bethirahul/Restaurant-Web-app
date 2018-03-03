@@ -576,7 +576,7 @@ def allResPg():
 
     # Found Restaurants table
     if all_res:
-        user_id = 0
+        local_id = 0
         logged_in = False
         if 'username' in session:
             local_id = getLocalID(session['email'])

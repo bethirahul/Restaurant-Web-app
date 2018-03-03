@@ -36,7 +36,7 @@ class User(Base):
     provider = Column(String(250), nullable=False)
     # ^^Google, Facebook, Local
     #password_hash = Column(String(64))
-    token = Column(String(32))
+    #token = Column(String(32))
 
     #def hash_password(self, password):
     #    self.password_hash = custom_app_context.encrypt(password)
