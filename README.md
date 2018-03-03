@@ -24,8 +24,10 @@ It also has a JSON endpoint to provide restaurant details and item details
     - ``oauth2client``
     - ``httplib2``
 2. Setup Database:
+    - _Skip this step and delete [``restaurantmenuwithusers.db``](/restaurantmenuwithusers.db) file if you want to use my database setup_
     - Run [``database_setup.py``](/database_setup.py) using Python to setup Database
     - Run [``initiating_db_with_users.py``](/initiating_db_with_users.py) using Python to populate the database with values.
+        - _You can modify this file with your own values._
 3. Run [``flask_app.py``](/flask_app.py) using Python, the app will be up and running on [localhost:8000](http://localhost:8000) address. Press **Ctrl**+**C** a few times to stop the server.
 4. To be able to use Google and Facebook OAuth 2.0 Authentication, App ID and Client Secret are needed from each of the providers. Populate these values inside:
     - Google - [``client_secret.json``](/client_secret.json)
