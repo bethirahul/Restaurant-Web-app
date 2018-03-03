@@ -702,6 +702,9 @@ def editResPg(res_id):
         if request.form['res_name'] != res.name:
             res.name = request.form['res_name']
             db_session.commit()
+        else:
+            print("\n>> Warning: No change in Restaurant's name, ignored \
+request\n")
 
     # After adding Restaurant OR
     # Cannot find Restaurant
