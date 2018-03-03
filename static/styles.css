@@ -1,6 +1,7 @@
 body {
     font-family: Calibri, Helvetica, sans-serif;
     background-color: #505050;
+    border: 1px solid #dd0000;
 }
 
 h1 {
@@ -21,14 +22,24 @@ a {
     color: #ff4800;
 }
 
-main {
-    padding-left: 3%;
-    padding-right: 3%;
-    grid-column: 2/3;
-    background-color: #eeeeee;
+h1, h3, p, a, div{
+    border: 1px solid #003cff;
 }
 
 .total-page {
     display: grid;
     grid-template-columns: auto minmax(auto, 225mm) auto;
+    border: 1px solid #ffae00;
+}
+
+main {
+    padding-left: 3%;
+    padding-right: 3%;
+    grid-column: 2/3;
+    background-color: #eeeeee;
+    border: 1px solid #51b400;
+}
+
+.mid-align {
+    text-align: center;
 }

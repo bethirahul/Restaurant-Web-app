@@ -39,6 +39,11 @@ from flask import make_response
 # similar to urllib2 but with improvements
 import requests
 
+# To get os variables
+# Used to append the url_for link with modified time as extension
+# This is to get dynamic loading of url_for while Flask renders templates
+import os
+
 
 # First set Flask app
 app = Flask(__name__)
@@ -82,6 +87,22 @@ APPLICATION_NAME = "Restaurant Menu Application"
 
 
 # These must be placed after setting database and Flask name to flask app
+
+# Used to append the url_for link with modified time as extension
+# This is to get dynamic loading of url_for while Flask renders templates
+@app.context_processor
+def override_url_for():
+    return dict(url_for=dated_url_for)
+
+def dated_url_for(endpoint, **values):
+    if endpoint == 'static':
+        filename = values.get('filename', None)
+        if filename:
+            file_path = os.path.join(app.root_path,
+                                     endpoint, filename)
+            values['q'] = int(os.stat(file_path).st_mtime)
+    return url_for(endpoint, **values)
+
 
 # ========================
 # Root - Home Page

@@ -9,19 +9,19 @@
   <body>
     <div class="total-page">
       <main>
-        <h1>Welcome to my Restaurants Catalogue</h1><br>
-        <h3>
+        <h1 class=mid-align>Welcome to my Restaurants Catalogue</h1><br>
+        <h3 class=mid-align>
           <a href="{{url_for('allResPg')}}">Show All Restaurants</a>
         </h3><br>
         <br>
         {% if logged_in == False %}
-        <p>Please login to make changes to the catalogue</p>
-        <h3>
+        <p class=mid-align>Please login to make changes to the catalogue</p>
+        <h3 class=mid-align>
           <a class="login" href="{{url_for('loginPg')}}">Login</a>
         </h3>
         {% else %}
-        <p>You are logged-in as {{user_name}} through {{provider}}</p>
-        <h3>
+        <p class=mid-align>You are logged-in as {{user_name}} through {{provider}}</p>
+        <h3 class=mid-align>
           <a class="login" href="{{url_for('disconnectPg')}}">Logout</a>
         </h3>
         {% endif %}
