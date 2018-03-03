@@ -1,7 +1,9 @@
 body {
     font-family: Calibri, Helvetica, sans-serif;
     background-color: #505050;
-    border: 1px solid #dd0000;
+    /*border: 1px solid #dd0000;*/
+    display: grid;
+    grid-template-columns: auto minmax(auto, 225mm) auto;
 }
 
 h1, h3, h5, p, a, div, section, article, nav, footer {
@@ -27,16 +29,10 @@ a {
     color: #ff4800;
 }
 
-.total-page {
-    display: grid;
-    grid-template-columns: auto minmax(auto, 225mm) auto;
-    border: 1px solid #ffae00;
-}
-
 main {
     grid-column: 2/3;
     background-color: #eeeeee;
-    border: 1px solid #51b400;
+    /*border: 1px solid #51b400;*/
     padding: 5mm;
 }
 

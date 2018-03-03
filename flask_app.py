@@ -291,7 +291,9 @@ def gconnect():
 
     # print("done!")
 
-    output = '''<h1>Welcome, {name} ({user_id}) [{provider}]!</h1>
+    output = '''<br>
+    <h1>Welcome, {name}!</h1>
+    <br>
     <img
       src="{pic_url}"
       style = "
@@ -300,11 +302,10 @@ def gconnect():
         border-radius: 150px;
         -webkit-border-radius: 150px;
         -moz-border-radius: 150px;">
+    <br>
     '''
     return output.format(
             name=session['username'],
-            user_id=session['user_id'],
-            provider=session['provider'],
             pic_url=session['picture']
         )
 
@@ -413,7 +414,9 @@ def fbconnect():
 
     # print("done!")
 
-    output = '''<h1>Welcome, {name} ({user_id}) [{provider}]!</h1>
+    output = '''<br>
+    <h1>Welcome, {name}!</h1>
+    <br>
     <img
       src="{pic_url}"
       style = "
@@ -422,11 +425,10 @@ def fbconnect():
         border-radius: 150px;
         -webkit-border-radius: 150px;
         -moz-border-radius: 150px;">
+    <br>
     '''
     return output.format(
             name=session['username'],
-            user_id=session['user_id'],
-            provider=session['provider'],
             pic_url=session['picture'],
             pic_width=pic_width,
             pic_height=pic_height

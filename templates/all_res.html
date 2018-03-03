@@ -5,10 +5,10 @@
       type=text/css
       href="{{ url_for('static', filename='styles.css') }}">
   </head>
-  <title>Restaurants</title>
-  <body class="total-page">
+  <title>Rahul's Restaurants App</title>
+  <body>
     <main>
-      <div class="two-columns-layout">
+      <section class="two-columns-layout">
         <nav class="first-column">
           <h1>Restaurants:</h1>
           <br>
@@ -49,7 +49,7 @@
           </p>
           {% endfor %}
         </article>
-      </div>
+      </section>
       <footer>
         <br>
         {% if logged_in == True %}

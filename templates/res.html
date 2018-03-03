@@ -6,7 +6,7 @@
       href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <title>{{res.name}}</title>
-  <body class="total-page">
+  <body>
     <main>
       <h1>{{res.name}}</h1>
       {% if logged_in == True %}
@@ -46,7 +46,7 @@
           "{{url_for('editItmPg', res_id = res.id, item_id = item.id)}}">
         Edit
       </a>
-      <span> - </span>
+      <span> | </span>
       <a
         class="edit-link"
         href="{{url_for('delItmPg', res_id = res.id, item_id = item.id)}}">
