@@ -131,15 +131,14 @@ def index():
 # ========================
 # Login Page
 @app.route(login_path, methods=['GET'])
+@app.route(login_path + '/', methods=['GET'])
 def loginPg():
     '''Login Page'''
-
-    # Get previous website path to redirect back
-    if request.referrer is None:
-        prev_path = ''
-    else:
-        prev_path = request.referrer
-    print("\nLogin Page's - Previous Page: " + prev_path)
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
 
     # Generate Random token
     state_token = ''
@@ -157,7 +156,7 @@ def loginPg():
     return render_template(
             'login.html',
             STATE=state_token,
-            prev_path=prev_path
+            prev_path=request.referrer
         )
 
 
@@ -285,14 +284,14 @@ def gconnect():
         createUser()
         print("New User Created!")
     
-    print('\nUser Table:')
-    users = db_session.query(User).all()
-    for user in users:
-        print(str(user.id) + ": " + user.name + ": " + user.email)
+    # print('\nUser Table:')
+    # users = db_session.query(User).all()
+    # for user in users:
+    #     print(str(user.id) + ": " + user.name + ": " + user.email)
 
-    #flash("you are now logged in as {}".format(session['username']))
+    # flash("you are now logged in as {}".format(session['username']))
 
-    print("done!")
+    # print("done!")
 
     output = '''<h1>Welcome, {name} ({user_id}) [{provider}]!</h1>
     <img
@@ -407,14 +406,14 @@ def fbconnect():
         createUser()
         print("New User Created!")
 
-    print('\nUser Table:')
-    users = db_session.query(User).all()
-    for user in users:
-        print(str(user.id) + ": " + user.name + ": " + user.email)
+    # print('\nUser Table:')
+    # users = db_session.query(User).all()
+    # for user in users:
+    #     print(str(user.id) + ": " + user.name + ": " + user.email)
 
-    #flash("you are now logged in as {}".format(session['username']))
+    # flash("you are now logged in as {}".format(session['username']))
 
-    print("done!")
+    # print("done!")
 
     output = '''<h1>Welcome, {name} ({user_id}) [{provider}]!</h1>
     <img
@@ -441,16 +440,11 @@ def fbconnect():
 @app.route(logout_path, methods=['GET'])
 def disconnectPg():
     '''Logout Page'''
-    # Check for facebook login and redirect to facebook disconnect
-    #if session['provider'] == 'facebook':
-    #    return redirect(url_for('fbdisconnectPg'))
-
-     # Get previous website path to redirect back
-    if request.referrer is None:
-        prev_path = ''
-    else:
-        prev_path = request.referrer
-    print("\nLogin Page's - Previous Page: " + prev_path)
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
     
     # To only disconnect a connected user, check Access Token
     access_token = session.get('access_token')
@@ -466,7 +460,7 @@ def disconnectPg():
         return response  # 401
 
     # If Access Token is Available
-    print('\n>> In Google Disconnect Page, access token is:\n' + access_token)
+    print('\n>> In Disconnect Page')
     print('>> User name is: ' + session['username'])
     print('>> Connected through: ' + session['provider'])
 
@@ -486,8 +480,6 @@ def disconnectPg():
         #return redirect(url_for('fbdisconnectPg'))
     # Disconnect and get the response
     result = httplib2.Http().request(url, 'GET')[0]
-    print("\nResponse for logout:")
-    print(result)
 
     # Check if the response is 200 OK
     if result['status'] == '200':
@@ -504,7 +496,7 @@ def disconnectPg():
 
         # return response  # 200
 
-        return render_template('logout.html', next_page=prev_path)
+        return render_template('logout.html', next_page=request.referrer)
 
     # If the response from google was NOT 200 OK
     # Make and send error response 400 with a message by encoding with JSON
@@ -565,13 +557,21 @@ def allResJSON():
 @app.route(add_res_path, methods=['GET', 'POST'])
 def addResPg():
     '''Add Restaurant Page'''
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
+
     # Check if Logged in
     if 'username' not in session:
+        print("\n>> Error: User not logged in!\n")
         return redirect(url_for('loginPg'))
 
     # Check if the user has account in database
     local_id = getLocalID(session['email'])
     if local_id == None:
+        print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
     # GET
@@ -658,8 +658,21 @@ def resJSON(res_id):
 )
 def editResPg(res_id):
     '''Edit Restaurant Page'''
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
+
     # Check if Logged in
     if 'username' not in session:
+        print("\n>> Error: User not logged in!\n")
+        return redirect(url_for('loginPg'))
+
+    # Check if the user has account in database
+    local_id = getLocalID(session['email'])
+    if local_id == None:
+        print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
     # Get restaurant
@@ -667,6 +680,10 @@ def editResPg(res_id):
 
     # Found restaurant
     if res:
+        # Check if the user is the creater of the restaurant
+        if str(local_id) != str(res.creater_id):
+            print("\n>> Error: User is not the creater!\n")
+            return redirect(url_for('allResPg'))
 
         # GET
         if request.method == 'GET':
@@ -697,8 +714,21 @@ def editResPg(res_id):
     del_res_path.format(res_id='<int:res_id>'), methods=['GET', 'POST'])
 def delResPg(res_id):
     '''Delete Restaurant Page'''
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
+
     # Check if Logged in
     if 'username' not in session:
+        print("\n>> Error: User not logged in!\n")
+        return redirect(url_for('loginPg'))
+
+    # Check if the user has account in database
+    local_id = getLocalID(session['email'])
+    if local_id == None:
+        print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
     # Get restaurant
@@ -706,6 +736,10 @@ def delResPg(res_id):
 
     # Found Restaurant
     if res:
+        # Check if the user is the creater of the restaurant
+        if str(local_id) != str(res.creater_id):
+            print("\n>> Error: User is not the creater!\n")
+            return redirect(url_for('allResPg'))
 
         # GET
         if request.method == 'GET':
@@ -733,8 +767,21 @@ def delResPg(res_id):
 )
 def addItmPg(res_id):
     '''Add Item Page'''
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
+
     # Check if Logged in
     if 'username' not in session:
+        print("\n>> Error: User not logged in!\n")
+        return redirect(url_for('loginPg'))
+
+    # Check if the user has account in database
+    local_id = getLocalID(session['email'])
+    if local_id == None:
+        print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
     # Get restaurant
@@ -742,6 +789,10 @@ def addItmPg(res_id):
 
     # Found Restaurant
     if res:
+        # Check if the user is the creater of the restaurant
+        if str(local_id) != str(res.creater_id):
+            print("\n>> Error: User is not the creater!\n")
+            return redirect(url_for('allResPg'))
 
         # GET
         if request.method == 'GET':
@@ -777,8 +828,21 @@ def addItmPg(res_id):
 )
 def editItmPg(res_id, item_id):
     '''Edit Item Page'''
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
+
     # Check if Logged in
     if 'username' not in session:
+        print("\n>> Error: User not logged in!\n")
+        return redirect(url_for('loginPg'))
+
+    # Check if the user has account in database
+    local_id = getLocalID(session['email'])
+    if local_id == None:
+        print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
     # Get restaurant
@@ -786,6 +850,10 @@ def editItmPg(res_id, item_id):
 
     # Found Restaurant
     if res:
+        # Check if the user is the creater of the restaurant
+        if str(local_id) != str(res.creater_id):
+            print("\n>> Error: User is not the creater!\n")
+            return redirect(url_for('allResPg'))
 
         # Get item
         item = db_session.query(MenuItem).filter_by(
@@ -844,8 +912,21 @@ def editItmPg(res_id, item_id):
     )
 def delItmPg(res_id, item_id):
     '''Delete Item Page'''
+    # Check the previous page link
+    if request.referrer == '' or \
+        request.referrer is None:
+        print("\n>> Error: Landed directly!\n")
+        return redirect(url_for('index'))
+
     # Check if Logged in
     if 'username' not in session:
+        print("\n>> Error: User not logged in!\n")
+        return redirect(url_for('loginPg'))
+
+    # Check if the user has account in database
+    local_id = getLocalID(session['email'])
+    if local_id == None:
+        print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
     # Get restaurant
@@ -853,6 +934,10 @@ def delItmPg(res_id, item_id):
 
     # Found Restaurant
     if res:
+        # Check if the user is the creater of the restaurant
+        if str(local_id) != str(res.creater_id):
+            print("\n>> Error: User is not the creater!\n")
+            return redirect(url_for('allResPg'))
 
         # Get item
         item = db_session.query(MenuItem).filter_by(
