@@ -57,11 +57,10 @@ db_session = DBSession()
 
 # Home Page
 root_path = '/'
-login_path = '/login'
-g_login_success_path = '/gconnect'
-fb_login_success_path = '/fbconnect'
-logout_path = '/disconnect'
-#fb_logout_path = '/fbdisconnect'
+login_path = root_path + 'login/'
+g_login_success_path = root_path + 'gconnect'
+fb_login_success_path = root_path + 'fbconnect'
+logout_path = root_path + 'disconnect/'
 # -> Restaurants
 all_res_path = root_path + 'restaurants/'
 add_res_path = all_res_path + 'add/'
@@ -131,7 +130,6 @@ def index():
 # ========================
 # Login Page
 @app.route(login_path, methods=['GET'])
-@app.route(login_path + '/', methods=['GET'])
 def loginPg():
     '''Login Page'''
     # Check the previous page link
