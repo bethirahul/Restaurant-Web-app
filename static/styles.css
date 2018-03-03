@@ -4,13 +4,13 @@ body {
     border: 1px solid #dd0000;
 }
 
-h1, h3, p, a, div, section, article, nav, footer {
+h1, h3, h5, p, a, div, section, article, nav, footer {
     margin: 0;
     /*border: 1px solid #003cff;*/
 }
 
 h1 {
-    border-bottom: 2px solid rgb(100, 100, 100);
+    border-bottom: 0.4mm solid rgb(125, 125, 125);
     color: rgb(36, 36, 36);
 }
 
@@ -53,7 +53,7 @@ main {
 .first-column {
     grid-column: 1/2;
     padding-right: 5mm;
-    border-right: 2px solid rgb(100, 100, 100);
+    border-right: 0.4mm solid rgb(200, 200, 200);
 }
 
 .second-column {
@@ -70,6 +70,6 @@ main {
 }
 
 footer {
-    border-top: 2px solid rgb(100, 100, 100);
+    border-top: 0.4mm solid rgb(150, 150, 150);
     margin-top: 5mm;
 }

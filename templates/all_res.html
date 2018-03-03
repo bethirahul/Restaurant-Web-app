@@ -18,7 +18,7 @@
           </a>
           {% else %}
           <a class="edit-link" href="{{url_for('addResPg')}}">
-            Add new Restaurant
+            <b>Add Restaurant</b>
           </a>
           {% endif %}
           <br>
@@ -31,7 +31,7 @@
           <a class="edit-link" href="{{url_for('editResPg', res_id = res.id)}}">
             Edit
           </a>
-          <span> - </span>
+          <span> | </span>
           <a class="edit-link" href="{{url_for('delResPg', res_id = res.id)}}">
             Delete
           </a><br>
@@ -39,10 +39,14 @@
           {% endfor %}
         </nav>
         <article class="second-column">
-          <h1>Recent Items:</h1>
+          <h1>Latest Items:</h1>
           {% for item, res in items %}
           <br>
-          <p><b>{{item.name}}</b> <i>({{res.name}})</i></p>
+          <p>
+            <b>{{item.name}}</b>
+            <i> (<a href="{{url_for('resPg', res_id = res.id)}}">{{res.name}}</a>)
+            </i>
+          </p>
           {% endfor %}
         </article>
       </div>

@@ -6,42 +6,73 @@
       href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <title>{{res.name}}</title>
-  <body>
-    <h3>{{res.name}}</h3>
-    <h5>Created by {{creater_name}}</h5>
-    <a href="{{url_for('allResPg')}}">Go back</a><br>
-    {% if logged_in == False %}
-    <br>
-    <p>If you are the creater of this restaurant,</p>
-    <a href="{{url_for('loginPg')}}">Please login to make changes</a>
-    {% else %}
-        {% if res.creater_id|int() == user_id|int() %}
-    <a href="{{url_for('addItmPg', res_id = res.id)}}">Add Item</a><br>
+  <body class="total-page">
+    <main>
+      <h1>{{res.name}}</h1>
+      {% if logged_in == True %}
+      <h5>Created by {{creater_name}}</h5>
+      {% endif %}
+      <br>
+      <a href="{{url_for('allResPg')}}">Go back</a>
+      <br>
+      <br>
+      {% if logged_in == False %}
+      <p><i>If you are the creater of this restaurant,</i></p>
+      <a class="edit-link" href="{{url_for('loginPg')}}">
+        Please <b>Login</b> to make changes
+      </a>
+      <br>
+      {% else %}
+          {% if res.creater_id|int() == user_id|int() %}
+      <a class="edit-link" href="{{url_for('addItmPg', res_id = res.id)}}">
+        <b>Add Item</b>
+      </a>
+      <br>
+          {% endif %}
+      {% endif %}
+      {% for item in items %}
+      <br>
+      <p>
+        {{item.name}}
+        <br>
+        $ {{item.price}}
+        <br>
+        {{item.description}}
+      </p>
+          {% if res.creater_id|int() == user_id|int() and logged_in == True %}
+      <a
+        class="edit-link"
+        href=
+          "{{url_for('editItmPg', res_id = res.id, item_id = item.id)}}">
+        Edit
+      </a>
+      <span> - </span>
+      <a
+        class="edit-link"
+        href="{{url_for('delItmPg', res_id = res.id, item_id = item.id)}}">
+        Delete
+      </a>
+      <br>
+          {% endif %}
+      {% endfor %}
+      <footer>
+        <br>
+        {% if logged_in == True %}
+        <a class="edit-link" href="{{url_for('disconnectPg')}}">
+          Logout
+        </a>
+        {% else %}
+        <a class="edit-link" href="{{url_for('loginPg')}}">
+          <b>Login</b>
+        </a>
         {% endif %}
-    {% endif %}
-    <br>
-    {% for item in items %}
-    <p>
-      {{item.name}}<br>
-      $ {{item.price}}<br>
-      {{item.description}}
-    </p>
-        {% if res.creater_id|int() == user_id|int() and logged_in == True %}
-    <a href=
-        "{{url_for('editItmPg', res_id = res.id, item_id = item.id)}}">
-      Edit</a>
-    <a href="{{url_for('delItmPg', res_id = res.id, item_id = item.id)}}">
-      Delete</a><br>
-    <br>
-        {% endif %}
-    {% endfor %}
-    <br>
-    <p>
-      <b>Note:</b> Only the creater of the restaurant can edit, delete or
-      modify items in it.
-    </p>
-    {% if logged_in == True %}
-    <br><a href="{{url_for('disconnectPg')}}">Logout</a>
-    {% endif %}
+        <br>
+        <br>
+        <p>
+          <b>Note:</b> Only the creater this restaurant can make
+            modifications to it.
+        </p>
+      </footer>
+    </main>
   </body>
 </html>

@@ -515,57 +515,6 @@ def disconnectPg():
     return response  # 400
 
 
-# Facebook Logout
-# @app.route(fb_logout_path, methods=['DELETE'])
-# def fbdisconnectPg():
-#     '''Facebook Logout Page'''
-#     # To only disconnect a connected user, check Access Token
-#     access_token = session.get('access_token')
-
-#     # If Access Token is None, then the user is not connected before
-#     if access_token is None:
-#         print('Access Token is None')
-#         # Make and send error response 401 with a message by encoding with JSON
-#         response = make_response(
-#                 json.dumps('Current user not connected.'), 401)
-#         response.headers['Content-Type'] = 'application/json'
-
-#         return response  # 401
-    
-#     # If Access Token is Available
-#     print('\n>> In Facebook Disconnect Page, access token is:\n' + access_token)
-#     print('>> User name is: ' + session['username'])
-
-#     # Send the User ID to Facebook to revoke access to that user
-#     url = 'https://graph.facebook.com/{}/permissions'.format(
-#         session['user_id'])
-    
-#     # Disconnect and get the response
-#     result = httplib2.Http().request(url, 'GET')[0]
-#     print("\nResponse for logout:")
-#     print(result)
-
-#     # Check if the response is 200 OK
-#     if result['status'] == '200':
-#         # Delete all the session variables used for that user
-#         delSession()
-#         # Make and send a 200 OK response with a message by encoding with JSON
-#         # response = make_response(json.dumps('Successfully disconnected.'), 200)
-#         # response.headers['Content-Type'] = 'application/json'
-
-#         # return response  # 200
-
-#         return render_template('logout.html')
-    
-#     # If the response from google was NOT 200 OK
-#     # Make and send error response 400 with a message by encoding with JSON
-#     response = make_response(
-#             json.dumps('Failed to revoke token for given user.'), 400)
-#     response.headers['Content-Type'] = 'application/json'
-
-#     return response  # 400
-
-
 # ========================
 # All Restaurants Page
 @app.route(all_res_path, methods=['GET'])
@@ -618,6 +567,11 @@ def addResPg():
     '''Add Restaurant Page'''
     # Check if Logged in
     if 'username' not in session:
+        return redirect(url_for('loginPg'))
+
+    # Check if the user has account in database
+    local_id = getLocalID(session['email'])
+    if local_id == None:
         return redirect(url_for('loginPg'))
 
     # GET
