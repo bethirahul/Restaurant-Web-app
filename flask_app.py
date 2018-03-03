@@ -898,6 +898,8 @@ def editItmPg(res_id, item_id):
                 if item.description != request.form['item_desc']:
                     item.description = request.form['item_desc']
                 db_session.commit()
+            else:
+                print("\n>> Warning: Inputs were same, no changes were made\n")
 
         # After editing Item OR
         # Cannot find Item

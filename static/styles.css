@@ -6,7 +6,7 @@ body {
     grid-template-columns: auto minmax(auto, 225mm) auto;
 }
 
-h1, h3, h5, p, a, div, section, article, nav, footer {
+h1, h3, h5, p, a, div, section, article, nav, footer, textarea {
     margin: 0;
     /*border: 1px solid #003cff;*/
 }
@@ -27,6 +27,14 @@ p {
 a {
     text-decoration: none;
     color: #ff4800;
+}
+
+textarea {
+    width: 100%;
+    max-width: 120mm;
+    min-width: 20mm;
+    height: 20mm;
+    min-height: 10mm;
 }
 
 main {

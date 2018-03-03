@@ -7,45 +7,52 @@
   </head>
   <title>Edit Item</title>
   <body>
-    <h3>Edit '{{item.name}}' in restaurant '{{res.name}}'</h3>
-    <a href="{{url_for('resPg', res_id = res.id)}}">Go back</a><br>
-    <br>
-    <h4>Present Name, Price and Description:</h4>
-    <p>
-      {{item.name}}<br>
-      {{item.price}}<br>
-      {{item.description}}
-    </p>
-    <h4>Please update with new values below:</h4>
-    <form method="POST">
-      <p>Name:</p>
-      <input
-        type="text"
-        placeholder="Item name"
-        name="item_name"
-        value="{{item.name}}"><br>
+    <main>
+      <h3>Edit '{{item.name}}' in restaurant '{{res.name}}'</h3>
       <br>
-      <p>Price: $</p>
-      <input
-        type="text"
-        placeholder="Item price"
-        name="item_price"
-        value="{{item.price}}"><br>
+      <a href="{{url_for('resPg', res_id = res.id)}}">Go back</a><br>
       <br>
-      <p>Description:</p><br>
-      <textarea
-        placeholder="Item Description"
-        name="item_desc"
-        value="{{item.description}}"></textarea><br>
       <br>
-      <button type="submit">Update</button>
-    </form>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-    <p>{{message}}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+      <p>
+        <b>Present Name, Price and Description:</b><br>
+        <br>
+        {{item.name}}<br>
+        {{item.price}}<br>
+        {{item.description}}<br>
+        <br>
+        <br>
+        <b>Please update with new values below:</b><br>
+        <br>
+      </p>
+      <form method="POST">
+        <p>Name:</p>
+        <input
+          type="text"
+          placeholder="Item name"
+          name="item_name"
+          value="{{item.name}}"><br>
+        <br>
+        <p>Price: $</p>
+        <input
+          type="text"
+          placeholder="Item price"
+          name="item_price"
+          value="{{item.price}}"><br>
+        <br>
+        <p>Description:</p>
+        <textarea
+          placeholder="Item Description"
+          name="item_desc">{{item.description}}</textarea><br>
+        <br>
+        <button type="submit">Update</button>
+      </form>
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+      <p>{{message}}</p>
+              {% endfor %}
+          {% endif %}
+      {% endwith %}
+    </main>
   </body>
 </html>
