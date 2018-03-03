@@ -11,10 +11,11 @@
       <main class="two-columns-layout">
         <div class="first-column">
           <h1>Restaurants:</h1>
+          <br>
           {% if logged_in == False %}
-          <a href="{{url_for('loginPg')}}">Please <b>Login</b> to Add a new Restaurant</a>
+          <a class="edit-link" href="{{url_for('loginPg')}}">Please <b>Login</b> to Add a new Restaurant</a>
           {% else %}
-          <a href="{{url_for('addResPg')}}">Add new Restaurant</a>
+          <a class="edit-link" href="{{url_for('addResPg')}}">Add new Restaurant</a>
           {% endif %}
           <br>
           {% for res in all_res %}
@@ -28,8 +29,7 @@
           {% endfor %}
           <br>
           <p>
-            <b>Note:</b> Only the creater of the restaurant can edit, delete or
-            modify items in it.
+            <b>Note:</b> Only the creater of the restaurant can make modifications to that restaurant.
           </p>
           {% if logged_in == True %}
           <br><a href="{{url_for('disconnectPg')}}">Logout</a>

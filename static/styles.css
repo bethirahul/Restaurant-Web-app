@@ -5,7 +5,8 @@ body {
 }
 
 h1, h3, p, a, div{
-    border: 1px solid #003cff;
+    margin: 0;
+    /*border: 1px solid #003cff;*/
 }
 
 h1 {

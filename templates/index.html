@@ -17,12 +17,12 @@
         {% if logged_in == False %}
         <p class=mid-align>Please login to make changes to the catalogue</p>
         <h3 class=mid-align>
-          <a class="login" href="{{url_for('loginPg')}}">Login</a>
+          <a class="edit-link" class="login" href="{{url_for('loginPg')}}">Login</a>
         </h3>
         {% else %}
         <p class=mid-align>You are logged-in as {{user_name}} through {{provider}}</p>
         <h3 class=mid-align>
-          <a class="login" href="{{url_for('disconnectPg')}}">Logout</a>
+          <a class="edit-link" class="login" href="{{url_for('disconnectPg')}}">Logout</a>
         </h3>
         {% endif %}
       </main>
