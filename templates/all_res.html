@@ -6,39 +6,63 @@
       href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <title>Restaurants</title>
-  <body>
-    <div class="total-page">
-      <main class="two-columns-layout">
-        <div class="first-column">
+  <body class="total-page">
+    <main>
+      <div class="two-columns-layout">
+        <nav class="first-column">
           <h1>Restaurants:</h1>
           <br>
           {% if logged_in == False %}
-          <a class="edit-link" href="{{url_for('loginPg')}}">Please <b>Login</b> to Add a new Restaurant</a>
+          <a class="edit-link" href="{{url_for('loginPg')}}">
+            Please <b>Login</b> to Add a new Restaurant
+          </a>
           {% else %}
-          <a class="edit-link" href="{{url_for('addResPg')}}">Add new Restaurant</a>
+          <a class="edit-link" href="{{url_for('addResPg')}}">
+            Add new Restaurant
+          </a>
           {% endif %}
           <br>
           {% for res in all_res %}
           <br>
-          <a href="{{url_for('resPg', res_id = res.id)}}">{{res.name}}</a><br>
-              {% if res.creater_id|int() == user_id|int() and logged_in == True %}
-          <a class="edit-link" href="{{url_for('editResPg', res_id = res.id)}}">Edit</a>
+          <a href="{{url_for('resPg', res_id = res.id)}}">
+            <b>{{res.name}}</b>
+          </a><br>
+            {% if res.creater_id|int() == user_id|int() and logged_in == True %}
+          <a class="edit-link" href="{{url_for('editResPg', res_id = res.id)}}">
+            Edit
+          </a>
           <span> - </span>
-          <a class="edit-link" href="{{url_for('delResPg', res_id = res.id)}}">Delete</a><br>
-              {% endif %}
+          <a class="edit-link" href="{{url_for('delResPg', res_id = res.id)}}">
+            Delete
+          </a><br>
+            {% endif %}
           {% endfor %}
+        </nav>
+        <article class="second-column">
+          <h1>Recent Items:</h1>
+          {% for item, res in items %}
           <br>
-          <p>
-            <b>Note:</b> Only the creater of the restaurant can make modifications to that restaurant.
-          </p>
-          {% if logged_in == True %}
-          <br><a href="{{url_for('disconnectPg')}}">Logout</a>
-          {% endif %}
-        </div>
-        <div class="second-column">
-          <h1>Recent Items:</h1><br>
-        </div>
-      </main>
-    </div>
+          <p><b>{{item.name}}</b> ({{res.name}})</p>
+          {% endfor %}
+        </article>
+      </div>
+      <footer>
+        <br>
+        {% if logged_in == True %}
+        <a class="edit-link" href="{{url_for('disconnectPg')}}">
+          Logout
+        </a>
+        {% else %}
+        <a class="edit-link" href="{{url_for('loginPg')}}">
+          <b>Login</b>
+        </a>
+        {% endif %}
+        <br><br>
+        <p>
+          <b>Note:</b> Only the creater of the restaurant can make
+            modifications to that restaurant.
+        </p>
+      </footer>
+    </main>
   </body>
 </html>

@@ -16,7 +16,7 @@ import random
 import string
 
 # To use SQLAlchemy
-from sqlalchemy import create_engine, exc
+from sqlalchemy import create_engine, exc, desc
 from sqlalchemy.orm import sessionmaker
 
 # To use the tables classes we setup in our database
@@ -576,18 +576,23 @@ def allResPg():
 
     # Found Restaurants table
     if all_res:
-        local_id = 0
-        logged_in = False
-        if 'username' in session:
-            local_id = getLocalID(session['email'])
-            logged_in = True
+        items = db_session.query(MenuItem, Restaurant).join(Restaurant).\
+            order_by(desc(MenuItem.time_of_entry)).limit(10).all()
 
-        return render_template(
-                'all_res.html',
-                logged_in=logged_in,
-                all_res=all_res,
-                user_id=local_id
-            )
+        if items:
+            local_id = 0
+            logged_in = False
+            if 'username' in session:
+                local_id = getLocalID(session['email'])
+                logged_in = True
+
+            return render_template(
+                    'all_res.html',
+                    logged_in=logged_in,
+                    all_res=all_res,
+                    user_id=local_id,
+                    items=items
+                )
 
     # Cannot find Restaurants table
     return redirect(url_for('index'))

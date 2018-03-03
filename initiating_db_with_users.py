@@ -35,7 +35,7 @@ User2 = User(
         email="rahulbethi@hotmail.com",
         picture='https://pbs.twimg.com/profile_images/520580979182686208/4BbCJfqW_400x400.jpeg',
         user_id='bethirahul',
-        provider='hotmail'
+        provider='facebook'
     )
 session.add(User2)
 session.commit()

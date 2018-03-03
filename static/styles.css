@@ -4,7 +4,7 @@ body {
     border: 1px solid #dd0000;
 }
 
-h1, h3, p, a, div{
+h1, h3, p, a, div, section, article, nav, footer {
     margin: 0;
     /*border: 1px solid #003cff;*/
 }
@@ -62,5 +62,14 @@ main {
 }
 
 .edit-link {
-    color: #910000;
+    color: #0055c4;
+}
+
+.bold-text {
+    font-weight: bold;
+}
+
+footer {
+    border-top: 2px solid rgb(100, 100, 100);
+    margin-top: 5mm;
 }

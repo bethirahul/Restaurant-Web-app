@@ -3,7 +3,7 @@
 import sys
 
 # SQLAlchemy variables used in writing mapper code
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 
 # To use in configuration and class code
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,6 +13,9 @@ from sqlalchemy.orm import relationship
 
 # To use in the configuration code at the end of configuration
 from sqlalchemy import create_engine
+
+# To note the current time when the items are updated
+import datetime
 
 # For Hashing passwords
 #from passlib.apps import custom_app_context
@@ -85,6 +88,11 @@ class MenuItem(Base):
     description = Column(String(250))
     price = Column(String(8))
     course = Column(String(250))
+    time_of_entry = Column(
+            DateTime,
+            default=datetime.datetime.utcnow,
+            onupdate=datetime.datetime.utcnow
+        )
     restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
     restaurant = relationship(Restaurant)
     creater_id = Column(String(80), ForeignKey('user.id'))
