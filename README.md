@@ -55,6 +55,9 @@ It also has a JSON endpoint to provide restaurant details and item details
         - All links are accessed through GET method, only CRUD operations and login pages use POST method to submit the requests.
 
     - Flask framework is used to _handle requests_, send _**Flash messages**_ for errors, and render _**Dynamic HTML webpages**_.
+
+    - And at last the web server is run on [localhost:8000](http://localhost:8000) address.
+
     - _Please read through the code comments in [``flask_app.py``](/flask_app.py) for step by step explanation._
 
 _Please read through the detailed code comments in [``flask_app.py``](/flask_app.py) to know how the app is built._
