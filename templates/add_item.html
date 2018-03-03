@@ -7,35 +7,38 @@
   </head>
   <title>Add Item</title>
   <body>
-    <h3>Add a new Item in Restaurant '{{res.name}}'</h3>
-    <a href="{{url_for('resPg', res_id = res.id)}}">Go back</a><br>
-    <br>
-    <form method="POST">
-      <p>Name:</p>
-      <input
-        type="text"
-        placeholder="Item name"
-        name="item_name"><br>
+    <main>
+      <h3>Add a new Item in Restaurant '{{res.name}}'</h3>
       <br>
-      <p>Price: $</p>
-      <input
-        type="text"
-        placeholder="Item price"
-        name="item_price"><br>
+      <a href="{{url_for('resPg', res_id = res.id)}}">Go back</a><br>
       <br>
-      <p>Description:</p><br>
-      <textarea
-        placeholder="Item Description"
-        name="item_desc"></textarea><br>
-      <br>
-      <button type="submit">Add</button>
-    </form>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-    <p>{{message}}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+      <form method="POST">
+        <p>Name:</p>
+        <input
+          type="text"
+          placeholder="Item name"
+          name="item_name"><br>
+        <br>
+        <p>Price: $</p>
+        <input
+          type="text"
+          placeholder="Item price"
+          name="item_price"><br>
+        <br>
+        <p>Description:</p>
+        <textarea
+          placeholder="Item Description"
+          name="item_desc"></textarea><br>
+        <br>
+        <button type="submit">Add</button>
+      </form>
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+      <p>{{message}}</p>
+              {% endfor %}
+          {% endif %}
+      {% endwith %}
+    </main>
   </body>
 </html>
