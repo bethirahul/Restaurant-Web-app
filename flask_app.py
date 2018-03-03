@@ -890,11 +890,14 @@ def editItmPg(res_id, item_id):
             # Input name not empty
             if (item.name != request.form['item_name'] or
                     item.price != request.form['item_price'] or
+                    item.course != request.form['item_course'] or
                     item.description != request.form['item_desc']):
                 if item.name != request.form['item_name']:
                     item.name = request.form['item_name']
                 if item.price != request.form['item_price']:
                     item.price = request.form['item_price']
+                if item.course != request.form['item_course']:
+                    item.course = request.form['item_course']
                 if item.description != request.form['item_desc']:
                     item.description = request.form['item_desc']
                 db_session.commit()

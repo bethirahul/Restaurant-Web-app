@@ -37,6 +37,8 @@
         <br>
         $ {{item.price}}
         <br>
+        {{item.course}}
+        <br>
         {{item.description}}
       </p>
           {% if res.creater_id|int() == user_id|int() and logged_in == True %}

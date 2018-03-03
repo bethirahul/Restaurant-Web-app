@@ -30,7 +30,17 @@ a {
     color: #ff4800;
 }
 
+input {
+    font-family: Calibri, Helvetica, sans-serif;
+    font-size: 1em;
+    width: 100%;
+    max-width: 65mm;
+    min-width: 20mm;
+}
+
 textarea {
+    font-family: Calibri, Helvetica, sans-serif;
+    font-size: 1em;
     width: 100%;
     max-width: 120mm;
     min-width: 20mm;
