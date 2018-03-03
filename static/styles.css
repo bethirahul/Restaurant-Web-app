@@ -14,6 +14,7 @@ h1, h3, h5, p, a, div, section, article, nav, footer, textarea {
 h1 {
     border-bottom: 0.4mm solid rgb(125, 125, 125);
     color: rgb(36, 36, 36);
+    font-size: 1.75em
 }
 
 h3 {
