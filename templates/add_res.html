@@ -7,22 +7,27 @@
   </head>
   <title>Add Restaurant</title>
   <body>
-    <h3>Add a new Restaurant</h3>
-    <a href="{{url_for('allResPg')}}">Go back</a><br>
-    <br>
-    <form method="POST">
-      <input
-        type="text"
-        placeholder="Restaurant name"
-        name="res_name">
-      <button type="submit">Add</button>
-    </form>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-    <p>{{message}}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <main>
+      <h3>Add a new Restaurant</h3>
+      <br>
+      <a href="{{url_for('allResPg')}}">Go back</a>
+      <br>
+      <br>
+      <form method="POST">
+        <input
+          type="text"
+          placeholder="Restaurant name"
+          name="res_name">
+        <button type="submit">Add</button>
+      </form>
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+      <br>
+      <p>{{message}}</p>
+              {% endfor %}
+          {% endif %}
+      {% endwith %}
+    </main>
   </body>
 </html>
