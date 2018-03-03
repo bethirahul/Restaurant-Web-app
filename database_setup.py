@@ -88,11 +88,7 @@ class MenuItem(Base):
     description = Column(String(250))
     price = Column(String(8))
     course = Column(String(250))
-    time_of_entry = Column(
-            DateTime,
-            default=datetime.datetime.utcnow,
-            onupdate=datetime.datetime.utcnow
-        )
+    time_of_entry = Column(DateTime, default=datetime.datetime.utcnow)
     restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
     restaurant = relationship(Restaurant)
     creater_id = Column(String(80), ForeignKey('user.id'))

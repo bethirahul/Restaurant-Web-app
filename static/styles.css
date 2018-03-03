@@ -47,7 +47,7 @@ main {
 /* All restaurants page */
 .two-columns-layout {
     display: grid;
-    grid-template-columns: minmax(auto, 75mm) auto;
+    grid-template-columns: minmax(min-content, max-content) minmax(50mm, auto);
 }
 
 .first-column {
