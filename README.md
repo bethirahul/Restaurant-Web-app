@@ -67,6 +67,8 @@ It also has a JSON endpoint to provide restaurant details and item details
 
 _Please read through the detailed code comments in [``flask_app.py``](/flask_app.py) to know how the app is built._
 
+**Screenshots** of all the pages are located in [Screenshots](/Screenshots) folder.
+
 #### My LinkedIn profile
 
 https://www.linkedin.com/in/rahulbethi
