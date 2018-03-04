@@ -63,8 +63,6 @@ It also has a JSON endpoint to provide restaurant details and item details
 
     - And at last the web server is run on [localhost:8000](http://localhost:8000) address.
 
-    - _Please read through the code comments in [``flask_app.py``](/flask_app.py) for step by step explanation._
-
 _Please read through the detailed code comments in [``flask_app.py``](/flask_app.py) to know how the app is built._
 
 **Screenshots** of all the pages are located in [Screenshots](/Screenshots) folder.
