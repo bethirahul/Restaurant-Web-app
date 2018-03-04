@@ -153,6 +153,7 @@ def loginPg():
     session['state'] = state_token
     return render_template(
             'login.html',
+            CLIENT_ID=CLIENT_ID,
             STATE=state_token,
             prev_path=request.referrer
         )

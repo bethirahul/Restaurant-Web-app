@@ -27,7 +27,7 @@
         <span
           class="g-signin"
           data-scope="openid email"
-          data-clientid="1015406173800-a06ftre0guaj7blbcdm684mpe9h8qe73.apps.  googleusercontent.com"
+          data-clientid="{{CLIENT_ID}}"
           data-redirecturi="postmessage"
           data-accesstype="offline"
           data-cookiepolicy="single_host_origin"
@@ -36,6 +36,7 @@
         </span>
       </div><br>
       <script>
+          console.log("Google Script called");
           function signInCallback(authResult) // data obtained from google server
           {
               // check if the one-time-use code is present in the data obtained
