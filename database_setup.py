@@ -40,12 +40,12 @@ class User(Base):
     def serialize(self):
         # Returns data in easily serializable format (like dictionary format)
         return {
-            'name' : self.name,
-            'id' : self.id,
-            'email' : self.email,
-            'picture' : self.picture,
-            'user_id' : self.user_id,
-            'provider' : self.provider
+            'name': self.name,
+            'id': self.id,
+            'email': self.email,
+            'picture': self.picture,
+            'user_id': self.user_id,
+            'provider': self.provider
         }
 
 
@@ -62,9 +62,9 @@ class Restaurant(Base):
     def serialize(self):
         # Returns data in easily serializable format (like dictionary format)
         return {
-            'name' : self.name,
-            'id' : self.id,
-            'creater_id' : self.creater_id
+            'name': self.name,
+            'id': self.id,
+            'creater_id': self.creater_id
         }
 
 
@@ -87,12 +87,12 @@ class MenuItem(Base):
     def serialize(self):
         # Returns data in easily serializable format (like dictionary format)
         return {
-            'id' : self.id,
-            'name' : self.name,
-            'price' : self.price,
-            'description' : self.description,
-            'course' : self.course,
-            'creater_id' : self.creater_id
+            'id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'description': self.description,
+            'course': self.course,
+            'creater_id': self.creater_id
         }
 
 

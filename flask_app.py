@@ -52,6 +52,7 @@ app = Flask(__name__)
 engine = create_engine('sqlite:///restaurantmenuwithusers.db')
 Base.metadata.bind = engine
 
+# Database session
 DBSession = sessionmaker(bind=engine)
 db_session = DBSession()
 
@@ -85,13 +86,12 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME = "Restaurant Menu Application"
 
 
-# These must be placed after setting database and Flask name to flask app
-
 # Used to append the url_for link with modified time as extension
 # This is to get dynamic loading of url_for while Flask renders templates
 @app.context_processor
 def override_url_for():
     return dict(url_for=dated_url_for)
+
 
 def dated_url_for(endpoint, **values):
     if endpoint == 'static':
@@ -134,7 +134,7 @@ def loginPg():
     '''Login Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
 
@@ -282,15 +282,6 @@ def gconnect():
     if local_id is None:
         createUser()
         print("New User Created!")
-    
-    # print('\nUser Table:')
-    # users = db_session.query(User).all()
-    # for user in users:
-    #     print(str(user.id) + ": " + user.name + ": " + user.email)
-
-    # flash("you are now logged in as {}".format(session['username']))
-
-    # print("done!")
 
     output = '''<br>
     <h1>Welcome, {name}!</h1>
@@ -325,7 +316,7 @@ def fbconnect():
         response.headers['Content-Type'] = 'application/json'
 
         return response  # 401
-    
+
     # If the state_tokens matched
     # Collect access_token (short_lived) from the Facebook server
     # Similar to one-time-use code of Google
@@ -336,48 +327,26 @@ def fbconnect():
     app_id = json.loads(
             open('fb_client_secrets.json', 'r').read()
         )['web']['app_id']
-    #print("\nApp ID: " + app_id)
     app_secret = json.loads(
             open('fb_client_secrets.json', 'r').read()
         )['web']['app_secret']
-    #print("App Secret: " + app_secret )
-    # url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}$client_secret={app_secret}&fb_secret_token={access_token}'.format(
-    #         app_id=app_id,
-    #         app_secret=app_secret,
-    #         access_token=access_token
-    #     )
     url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id={app_id}&client_secret={app_secret}&fb_exchange_token={access_token}'.format(
             app_id=app_id,
             app_secret=app_secret,
             access_token=access_token
         )
-    #print('------------------------------------------------')
-    #print("Sending short-lived-token for long-lived-token:\n" + url)
     result = httplib2.Http().request(url, 'GET')[1]
-    #print("\nResponse for long lived access_token:")
-    #print(result)
-
-    # **Check result error is not done here
 
     # Get the access_token (long lived) from the response
-    #token = result.split("&")[0]
     token = json.loads(result.decode())['access_token']
-    #print("\nDecoded token:")
-    #print(token)
     session['access_token'] = token
 
     # Use token to get user information
     userinfo_url = 'https://graph.facebook.com/v2.8/me?access_token={}&fields=name,id,email,picture'.format(token)
-    #print('------------------------------------------------')
-    #print("Sending for user information:\n" + userinfo_url)
     userinfo_response = httplib2.Http().request(userinfo_url, 'GET')[1]
-    #print("\nResponse for user information:")
-    #print(userinfo_response)
 
     # Decode the response using JSON to get the user information
     userinfo = json.loads(userinfo_response.decode())
-    #print("\nDecoded user info:")
-    #print(userinfo)
     session['provider'] = 'facebook'
     session['username'] = userinfo['name']
     session['user_id'] = userinfo['id']
@@ -386,34 +355,11 @@ def fbconnect():
     pic_width = userinfo['picture']['data']['width']
     pic_height = userinfo['picture']['data']['height']
 
-    # Facebook uses different API to get Profile picture
-    # picture_url = 'https://graph.facebook.com/v2.2/me/picture?{}&redirect=0&height=200&width=200'.format(token)
-    # print('------------------------------------------------')
-    # print("Sending for picture:\n" + picture_url)
-    # picture_response = httplib2.Http().request(picture_url, 'GET')[1]
-    # print("\nResponse for picture:")
-    # print(picture_response)
-
-    # # Decode the response using JSON to get the picture url
-    # picture_info = json.loads(picture_response.decode())
-    # print("\nDecoded picture response:")
-    # print(picture_info)
-    # session['picture'] = picture_info['data']['url']
-
     # Check if user is already exists
     local_id = getLocalID(session['email'])
     if local_id is None:
         createUser()
         print("New User Created!")
-
-    # print('\nUser Table:')
-    # users = db_session.query(User).all()
-    # for user in users:
-    #     print(str(user.id) + ": " + user.name + ": " + user.email)
-
-    # flash("you are now logged in as {}".format(session['username']))
-
-    # print("done!")
 
     output = '''<br>
     <h1>Welcome, {name}!</h1>
@@ -443,10 +389,10 @@ def disconnectPg():
     '''Logout Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
-    
+
     # To only disconnect a connected user, check Access Token
     access_token = session.get('access_token')
 
@@ -469,16 +415,13 @@ def disconnectPg():
     if session['provider'] == 'google':
         # Send the Access Token to Google to revoke access to that token
         url = 'https://accounts.google.com/o/oauth2/revoke?token={}'.format(
-        session['access_token'])
+                session['access_token'])
     # Or else Facebook URL
     else:
-        #url = 'https://graph.facebook.com/{}/permissions'.format(
-        #        session['user_id'])
         url = 'https://graph.facebook.com/v2.8/{user_id}/permissions?method=delete&access_token={access_token}'.format(
                 user_id=session['user_id'],
                 access_token=session['access_token']
             )
-        #return redirect(url_for('fbdisconnectPg'))
     # Disconnect and get the response
     result = httplib2.Http().request(url, 'GET')[0]
 
@@ -491,11 +434,6 @@ def disconnectPg():
         del session['username']
         del session['email']
         del session['picture']
-        # Make and send a 200 OK response with a message by encoding with JSON
-        # response = make_response(json.dumps('Successfully disconnected.'), 200)
-        # response.headers['Content-Type'] = 'application/json'
-
-        # return response  # 200
 
         return render_template('logout.html', next_page=request.referrer)
 
@@ -518,10 +456,13 @@ def allResPg():
 
     # Found Restaurants table
     if all_res:
+        # Get Latest 10 items
         items = db_session.query(MenuItem, Restaurant).join(Restaurant).\
             order_by(desc(MenuItem.time_of_entry)).limit(10).all()
 
+        # Found items
         if items:
+            # Check if logged in or not
             local_id = 0
             logged_in = False
             if 'username' in session:
@@ -536,7 +477,7 @@ def allResPg():
                     items=items
                 )
 
-    # Cannot find Restaurants table
+    # Cannot find Restaurants table or items
     return redirect(url_for('index'))
 
 
@@ -560,7 +501,7 @@ def addResPg():
     '''Add Restaurant Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
 
@@ -571,7 +512,7 @@ def addResPg():
 
     # Check if the user has account in database
     local_id = getLocalID(session['email'])
-    if local_id == None:
+    if local_id is None:
         print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
@@ -590,7 +531,7 @@ def addResPg():
     new_res = Restaurant(name=request.form['res_name'], creater_id=local_id)
     db_session.add(new_res)
     db_session.commit()
-    
+
     return redirect(url_for('allResPg'))
 
 
@@ -661,7 +602,7 @@ def editResPg(res_id):
     '''Edit Restaurant Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
 
@@ -672,7 +613,7 @@ def editResPg(res_id):
 
     # Check if the user has account in database
     local_id = getLocalID(session['email'])
-    if local_id == None:
+    if local_id is None:
         print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
@@ -720,7 +661,7 @@ def delResPg(res_id):
     '''Delete Restaurant Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
 
@@ -731,7 +672,7 @@ def delResPg(res_id):
 
     # Check if the user has account in database
     local_id = getLocalID(session['email'])
-    if local_id == None:
+    if local_id is None:
         print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
@@ -773,7 +714,7 @@ def addItmPg(res_id):
     '''Add Item Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
 
@@ -784,7 +725,7 @@ def addItmPg(res_id):
 
     # Check if the user has account in database
     local_id = getLocalID(session['email'])
-    if local_id == None:
+    if local_id is None:
         print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
@@ -834,7 +775,7 @@ def editItmPg(res_id, item_id):
     '''Edit Item Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
 
@@ -845,7 +786,7 @@ def editItmPg(res_id, item_id):
 
     # Check if the user has account in database
     local_id = getLocalID(session['email'])
-    if local_id == None:
+    if local_id is None:
         print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
@@ -923,7 +864,7 @@ def delItmPg(res_id, item_id):
     '''Delete Item Page'''
     # Check the previous page link
     if request.referrer == '' or \
-        request.referrer is None:
+            request.referrer is None:
         print("\n>> Error: Landed directly!\n")
         return redirect(url_for('index'))
 
@@ -934,7 +875,7 @@ def delItmPg(res_id, item_id):
 
     # Check if the user has account in database
     local_id = getLocalID(session['email'])
-    if local_id == None:
+    if local_id is None:
         print("\n>> Error: User account not found!\n")
         return redirect(url_for('loginPg'))
 
@@ -1003,7 +944,6 @@ def itmJSON(res_id, item_id):
 
 
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 # Assigning user from session
 def createUser(password=''):
     '''Create new User'''
@@ -1014,22 +954,22 @@ def createUser(password=''):
             user_id=session['user_id'],
             provider=session['provider']
         )
-    #if session['provider'] == 'local':
-    #    newUser.hash_password(password)
     db_session.add(newUser)
     db_session.commit()
+
 
 def getUser(local_id):
     '''Get User Information from Local ID'''
     user = db_session.query(User).filter_by(id=local_id).one()
     return user
 
+
 def getLocalID(email):
     '''Get User ID number with email'''
     try:
         user = db_session.query(User).filter_by(email=email).first()
         return user.id
-    except:
+    except exc.DatabaseError:
         return None
 
 
