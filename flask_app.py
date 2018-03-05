@@ -90,15 +90,23 @@ APPLICATION_NAME = "Restaurant Menu Application"
 # This is to get dynamic loading of url_for while Flask renders templates
 @app.context_processor
 def override_url_for():
+    '''Redirects ``url_for(..)`` to ``dated_url_for(..)`` in this app'''
     return dict(url_for=dated_url_for)
 
 
 def dated_url_for(endpoint, **values):
+    '''Appends static endpoints with last modified time - to make them dynamic'''
+    # Check if endpoint is static
     if endpoint == 'static':
+        # Get file name from the values
         filename = values.get('filename', None)
+        # File name is not none
         if filename:
+            # File path = App total path (OS) + Endpoint + file name
             file_path = os.path.join(app.root_path,
                                      endpoint, filename)
+            # Query with key value q and value of last modified time
+            # Get last modified time of the file witht he file path
             values['q'] = int(os.stat(file_path).st_mtime)
     return url_for(endpoint, **values)
 
